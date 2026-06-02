@@ -9,14 +9,20 @@ Getting up and running on a completely new machine requires running only two sim
 ### Step 1: Initialize the Machine
 Run the setup automation script to configure directories, pull packages via uv, scaffold your React environment, and build internal Docker layers.
 ```Bash
-chmod +x setup.sh start.sh
-./setup.sh
+chmod +x  start.sh
+
 ```
 
-### Step 2: Spin Up the Cluster
-Launch your synchronized multi-runtime application using the execution controller:
+### Step 2: Initalize the project
+Install backend dependeicies:
 ```Bash
-./start.sh
+ cd backend
+uv pip install -r requirements.txt
+```
+Install frontend dependeicies:
+```Bash
+ cd frontend
+npm install
 ```
 
 ## 📂 Project Structure
