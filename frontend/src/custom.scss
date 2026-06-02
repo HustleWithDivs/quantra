@@ -1,0 +1,157 @@
+// 1. Required Bootstrap core modules
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/maps";
+@import "bootstrap/scss/mixins";
+
+// 2. Base Typography Variable Overrides (Light Mode defaults)
+$font-family-sans-serif: 'Inter', sans-serif;
+$font-family-monospace: 'JetBrains Mono', monospace;
+
+// Apply base body weight and standard telemetry tracking
+$body-font-weight: 400;
+$code-font-weight: 500;
+
+// 3. Color Token Definitions
+$body-bg: #F8FAFC;              
+$body-color: #1E293B;           
+$card-bg: #FFFFFF;
+$text:#1E293B;
+$secondary-text:#64748B;            
+$primary: #4338CA;              
+$info: #0D9488;                 
+
+$dark-bg: #0F172A;              
+$dark-card-bg: #1E293B;         
+$dark-text: #F1F5F9;            
+$dark-secondary-text: #94A3B8;  
+$dark-primary: #6366F1;         
+$dark-accent: #2DD4BF;          
+
+$theme-colors: map-merge($theme-colors, (
+  "primary": $primary,
+  "info": $info
+));
+
+// 4. Compile Bootstrap System Styles
+@import "bootstrap/scss/bootstrap";
+
+// 5. Apply Global Core Typography rules
+body {
+  font-family: $font-family-sans-serif;
+  letter-spacing: 0; // Body Copy: 0 tracking
+}
+
+code, pre, .telemetry {
+  font-family: $font-family-monospace;
+  font-weight: $code-font-weight;
+  letter-spacing: 0.02em; // Telemetry: +0.02em tracking
+}
+
+// 6. Custom Element Classes with Dynamic Color Mode Shifts
+.large-display {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 800;        // Light Mode: Extra Bold
+  letter-spacing: -0.02em; // Light Mode: Tight Tracking
+}
+
+.slide-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;        // Light Mode: Bold
+  letter-spacing: -0.01em; // Light Mode: Subtle Tracking
+}
+
+// 7. Inject Dark Mode Scopes (Color + Typography shifts)
+[data-bs-theme="light"]{
+   --bs-body-bg: #{$body-bg};
+  --bs-body-bg-rgb: #{to-rgb($body-bg)};
+  --bs-card-bg: #{$card-bg};
+  --bs-body-color: #{$text};
+  --bs-body-color-rgb: #{to-rgb($text)};
+  --bs-secondary-color: #{$secondary-text};
+  --bs-secondary-color-rgb: #{to-rgb($secondary-text)};
+  --bs-primary: #{$primary};
+  --bs-primary-rgb: #{to-rgb($primary)};
+  --bs-info: #{$info};
+  --bs-info-rgb: #{to-rgb($info)};
+
+  // Dynamic Typography Overrides for Dark Mode (Nordic Sci-Fi)
+  .large-display {
+    font-weight: 700;        // Shifts down to Bold
+    letter-spacing: -0.02em; // Maintains Tight Tracking
+  }
+
+  .slide-title {
+    font-weight: 600;        // Shifts down to Semi Bold
+    letter-spacing: -0.01em; // Maintains Subtle Tracking
+  }
+  .card{
+    --bs-card-bg:#{$card-bg}
+  }
+  .nav-link{
+    color: #{$text};
+  }
+
+  // Component adjustments
+  .btn-primary {
+    --bs-btn-bg: #{$dark-primary};
+    --bs-btn-border-color: #{$dark-primary};
+    --bs-btn-hover-bg: #{darken($dark-primary, 10%)};
+    --bs-btn-hover-border-color: #{darken($dark-primary, 10%)};
+  }
+  .btn-info {
+    --bs-btn-bg: #{$dark-accent};
+    --bs-btn-border-color: #{$dark-accent};
+    --bs-btn-hover-bg: #{darken($dark-accent, 10%)};
+    --bs-btn-hover-border-color: #{darken($dark-accent, 10%)};
+    --bs-btn-color: #0F172A;
+  }
+}
+
+[data-bs-theme="dark"] {
+  --bs-body-bg: #{$dark-bg};
+  --bs-body-bg-rgb: #{to-rgb($dark-bg)};
+  --bs-card-bg: #{$dark-card-bg};
+  --bs-body-color: #{$dark-text};
+  --bs-body-color-rgb: #{to-rgb($dark-text)};
+  --bs-secondary-color: #{$dark-secondary-text};
+  --bs-secondary-color-rgb: #{to-rgb($dark-secondary-text)};
+  --bs-primary: #{$dark-primary};
+  --bs-primary-rgb: #{to-rgb($dark-primary)};
+  --bs-info: #{$dark-accent};
+  --bs-info-rgb: #{to-rgb($dark-accent)};
+
+  // Dynamic Typography Overrides for Dark Mode (Nordic Sci-Fi)
+  .large-display {
+    font-weight: 700;        // Shifts down to Bold
+    letter-spacing: -0.02em; // Maintains Tight Tracking
+  }
+
+  .slide-title {
+    font-weight: 600;        // Shifts down to Semi Bold
+    letter-spacing: -0.01em; // Maintains Subtle Tracking
+  }
+  .card{
+    --bs-card-bg:#{$dark-card-bg}
+  }
+
+  // Component adjustments
+  .btn-primary {
+    --bs-btn-bg: #{$dark-primary};
+    --bs-btn-border-color: #{$dark-primary};
+    --bs-btn-hover-bg: #{darken($dark-primary, 10%)};
+    --bs-btn-hover-border-color: #{darken($dark-primary, 10%)};
+  }
+  .btn-info {
+    --bs-btn-bg: #{$dark-accent};
+    --bs-btn-border-color: #{$dark-accent};
+    --bs-btn-hover-bg: #{darken($dark-accent, 10%)};
+    --bs-btn-hover-border-color: #{darken($dark-accent, 10%)};
+    --bs-btn-color: #0F172A;
+  }
+  .nav-link{
+    color: #{$dark-text};
+  }
+}
+
+
