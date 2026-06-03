@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from 'react';
+import React, { lazy, Suspense,useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Container, Row, Col, Spinner } from 'react-bootstrap';
 import Topbar from './Topbar';
@@ -6,14 +6,15 @@ import Sidebar from './Sidebar';
 
 
 // 1. Lazy load your components right here inside the layout module
-const Dashboard = lazy(() => import('../pages/Dashboard'));
-const MasterData = lazy(() => import('../pages/MasterData'));
-const ProductData = lazy(() => import('../pages/ProductData'));
-const Customer = lazy(() => import('../pages/Customer'));
-const UserManagement = lazy(() => import('../pages/UserManagement'));
+const Dashboard = lazy(() => import('../../pages/Dashboard'));
+const MasterData = lazy(() => import('../../pages/MasterData'));
+const ProductData = lazy(() => import('../../pages/ProductData'));
+const Customer = lazy(() => import('../../pages/Customer'));
+const UserManagement = lazy(() => import('../../pages/UserManagement'));
 
 // Centralized UI loading indicator fallback
 const PageLoader =() =>(
+   
   <div className="d-flex align-items-center justify-content-center w-100" style={{ height: '50vh' }}>
     <Spinner animation="border" variant="primary" role="status">
       <span className="visually-hidden">Loading...</span>
@@ -21,45 +22,40 @@ const PageLoader =() =>(
   </div>
 );
 
-function PageLayout({theme,setTheme}) {
+const PageLayout=({theme,setTheme}) =>{
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
   return (
-    <Container  fluid className="d-flex min-vh-100">
-      {/* Structural Global Components */}
-      <Topbar theme={theme} setTheme={setTheme} />
-                {/* Static Sidebar Panel Column */}
+    <Container fluid className="p-0 min-vh-100 d-flex flex-column overflow-hidden">
+      <div className="d-flex flex-grow-1">
+        {/* Dynamic Width Sidebar Panel */}
+        <Sidebar isExpanded={isSidebarExpanded} />
 
-        
-        <Row className="d-flex flex-col">
-          
-          <Col xs={3} md={3} lg={2} className="p-1 position-sticky" style={{ top: '56px', width:'240px', padding:0 }}>
-            <Sidebar />
-          </Col>
+        {/* Primary Workspace Engine Container */}
+        <div className="d-flex flex-column flex-grow-1 min-vh-100 overflow-hidden">
+          <Topbar 
+            theme={theme} 
+            setTheme={setTheme} 
+            onToggleSidebar={() => setIsSidebarExpanded(!isSidebarExpanded)} 
+          />
 
-          {/* Dynamic Content Switching Workspace Area */}
-          <Col xs={9} md={9} lg={10} className="p-1 overflow-auto" style={{ height: 'calc(100vh - 56px)' }}>
-            
-            {/* 2. Embedded Router Configuration wrapped in Suspense */}
+          {/* Dynamic Route Display Canvas Area */}
+          <main className="flex-grow-1 p-4 overflow-auto" style={{ height: 'calc(100vh - 57px)' }}>
             <Suspense fallback={<PageLoader />}>
               <Routes>
-                {/* Fallback baseline routing index rules */}
-                <Route path="/" element={<Navigate to="dashboard" replace />} />
-                
-                {/* Dashboard view mappings */}
-                <Route path="dashboard" element={<Dashboard />} />
-                <Route path="master-data" element={<MasterData />} />
-                <Route path="product-data" element={<ProductData />} />
-                <Route path="customer" element={<Customer />} />
-                <Route path="user-management" element={<UserManagement />} />
-
-                {/* Optional Catch-all wildcard redirect handler */}
-                <Route path="*" element={<Navigate to="/" replace />} />
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/master-data" element={<MasterData />} />
+                <Route path="/product-data" element={<ProductData />} />
+                <Route path="/customer" element={<Customer />} />
+                <Route path="/user-management" element={<UserManagement />} />
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>
             </Suspense>
-
-          </Col>
-
-        </Row>
+          </main>
+        </div>
+      </div>
     </Container>
+    
   );
 }
 

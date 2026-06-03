@@ -2,6 +2,6 @@ import React from 'react';
 
 
 const MasterData=() =>{
-    return <></>
+    return <>Master Data</>
 }
 export default MasterData;
