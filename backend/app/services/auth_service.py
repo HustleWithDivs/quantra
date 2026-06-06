@@ -8,6 +8,7 @@ import jwt # Using PyJWT or python-jose
 from app.models.user_model import User
 from app.models.auth_model import RefreshToken
 from app.schemas.auth_schema import LoginRequest, TokenPairResponse
+from app.core.security import SecurityHelper
 
 SECRET_KEY = "your_enterprise_super_secret_key" # Replace with your config reference
 ALGORITHM = "HS256"
@@ -18,8 +19,8 @@ class AuthService:
     @staticmethod
     def verify_password(plain_password: str, hashed_password: str) -> bool:
         # Replace this stub with: pwd_context.verify(plain_password, hashed_password)
-        stub_check = f"hashed_stub_{plain_password}"
-        return hmac.compare_digest(stub_check, hashed_password)
+        return SecurityHelper.verify_password(plain_password, hashed_password)
+        
 
     @staticmethod
     def create_token(data: dict, expires_delta: timedelta) -> str:

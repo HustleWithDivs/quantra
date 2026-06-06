@@ -54,3 +54,4 @@ xxhash==3.7.0
 zstandard==0.25.0
 email-validator
 python-jose[cryptography]
+passlib[bcrypt]

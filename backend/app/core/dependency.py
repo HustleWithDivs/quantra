@@ -1,21 +1,28 @@
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+# 1. Import HTTPBearer and HTTPAuthorizationCredentials
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import jwt
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.user_model import User
 from app.services.auth_service import SECRET_KEY, ALGORITHM
+from app.models.permission_model import Permission
+from app.models.role_model import RolePermission
 
-# Points FastAPI to our login endpoint for documentation purposes
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+# 2. Replace OAuth2PasswordBearer with HTTPBearer
+security_scheme = HTTPBearer()
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
+# 3. Update the type hint to accept HTTPAuthorizationCredentials
+def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security_scheme), db: Session = Depends(get_db)) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
+        # 4. Extract the raw string token from credentials object
+        token = credentials.credentials
+        
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id: str = payload.get("sub")
         if user_id is None:

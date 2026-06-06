@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_
 from app.models.user_model import User
 from app.schemas.user_schema import UserCreate, UserUpdate
+from app.core.security import SecurityHelper
 class UserService:
     @staticmethod
     def get_all_users(
@@ -58,7 +59,7 @@ class UserService:
         try:
             # 3. Securely hash password and build user instance
             # secure_hash = pwd_context.hash(user_in.password)
-            secure_hash = f"hashed_stub_{user_in.password}" # Replace with actual hashing implementation
+            secure_hash = SecurityHelper.hash_password(user_in.password)
             
             new_user = User(
                 first_name=user_in.first_name,
