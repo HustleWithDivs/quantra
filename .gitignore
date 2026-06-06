@@ -219,10 +219,14 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
-
-
+backend/*/*/__pycache__/*
+backend/*/*/*/__pycache__/*
 backend/.DS_Store
 backend/.env
-backend/app/__pycache__/*
-backend/app/__pycache__/*
 frontend/package-lock.json
+backend/uv.lock
+docker-compose.yml.bkp
+setup.ps1
+setup.sh
+.DS_Store
+backend/.python-version
