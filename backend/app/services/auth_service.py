@@ -1,4 +1,3 @@
-import hmac
 from uuid import UUID
 from datetime import datetime, timedelta
 from fastapi import HTTPException, status

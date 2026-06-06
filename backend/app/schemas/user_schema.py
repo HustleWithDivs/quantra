@@ -25,7 +25,7 @@ class UserRead(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def flatten_roles_to_ids(cls, data):
+    def flatten_roles_to_name(cls, data):
         # When coming from SQLAlchemy, data is an ORM instance object
         if hasattr(data, "roles") and data.roles:
             # Safely extract the UUID from each Role instance model
@@ -39,7 +39,7 @@ class UserRead(BaseModel):
             # If the dict contains raw model objects inside the list
             if data["roles"] and not isinstance(data["roles"][0], (str, UUID)):
                 data["roles"] = [getattr(r, "role_name", r) for r in data["roles"]]
-                
+       
         return data
 class UserCreate(BaseModel):
     first_name: str = Field(..., max_length=100)
@@ -58,17 +58,35 @@ class UserResponseData(BaseModel):
     gender: str
     is_active: bool
     created_at: datetime
-    roles: List[UUID] = []
+    # Used for display in your data grids/tables
+    roles: List[str] = []
+    # Used to populate select options / pre-filled forms in your UI
+    roles_id: List[UUID] = []
 
     model_config = ConfigDict(from_attributes=True)
 
+    @model_validator(mode="before")
     @classmethod
-    def model_validate(cls, obj, **kwargs):
-        """Helper to flatten role objects into an array of UUIDs for the creation response"""
-        instance = super().model_validate(obj, **kwargs)
-        if hasattr(obj, 'roles'):
-            instance.roles = [role.role_id for role in obj.roles]
-        return instance
+    def flatten_roles_to_names_and_ids(cls, data):
+        # Case A: When coming from SQLAlchemy ORM object
+        if hasattr(data, "roles") and data.roles:
+            # Serialize the core User table columns into a standard dictionary
+            data_dict = {c.key: getattr(data, c.key) for c in data.__table__.columns}
+            
+            # Populate BOTH arrays dynamically in a single loop execution
+            data_dict["roles"] = [role.role_name for role in data.roles]
+            data_dict["roles_id"] = [role.role_id for role in data.roles]
+            return data_dict
+            
+        # Case B: Fallback if data arrives as a raw dictionary
+        elif isinstance(data, dict):
+            # Safe copies to ensure we don't mutate state unexpectedly
+            raw_roles = data.get("roles", [])
+            if raw_roles and not isinstance(raw_roles[0], (str, UUID)):
+                data["roles"] = [getattr(r, "role_name", r) for r in raw_roles]
+                data["roles_id"] = [getattr(r, "role_id", r) for r in raw_roles]
+       
+        return data
 
 class UserUpdate(BaseModel):
     first_name: Optional[str] = Field(None, max_length=100)

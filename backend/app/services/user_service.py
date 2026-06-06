@@ -3,7 +3,8 @@ from fastapi import HTTPException, status
 from typing import List, Optional
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_
-from app.models.user_model import User
+from app.models.role_model import Role
+from app.models.user_model import User, UserRole
 from app.schemas.user_schema import UserCreate, UserUpdate
 from app.core.security import SecurityHelper
 class UserService:
