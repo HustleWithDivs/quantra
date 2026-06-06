@@ -1,6 +1,44 @@
+version: '3.8'
+
 services:
+  # 1. Quantra Dedicated Database Engine
+  db:
+    image: postgres:15-alpine
+    container_name: quantra_db
+    restart: always
+    environment:
+      POSTGRES_USER: quantra
+      POSTGRES_PASSWORD: Quantra@123   # Raw text works perfectly inside compose files
+      POSTGRES_DB: quantra_ops
+    ports:
+      - "5432:5432"                   # Exposes DB natively to your machine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - quantra_network
+
+  # 2. pgAdmin Management Dashboard
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: quantra_pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@quantra.com
+      PGADMIN_DEFAULT_PASSWORD: adminpassword123
+    ports:
+      - "5050:80"                      # View pgAdmin interface at http://localhost:5050
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - db
+    networks:
+      - quantra_network
+
+  # 3. Quantra Python API Backend Gateway
   backend:
     build: ./backend
+    container_name: quantra_backend
+    restart: always
     ports:
       - "8000:8000"
     volumes:
@@ -9,13 +47,32 @@ services:
       - ENV=development
     env_file:
       - ./backend/.env
+    depends_on:
+      - db                             # Ensures the database boots up before the API attempts connections
+    networks:
+      - quantra_network
 
+  # 4. Quantra React Frontend Application User Interface
   frontend:
     build: ./frontend
+    container_name: quantra_frontend
+    restart: always
     ports:
       - "5173:5173"
     volumes:
       - ./frontend:/app
-      - /app/node_modules
+      - /app/node_modules              # Prevents local host overrides on dependencies
     environment:
       - VITE_API_URL=http://localhost:8000
+    depends_on:
+      - backend                        # Ensures backend is listening before front-end mounts
+    networks:
+      - quantra_network
+
+volumes:
+  postgres_data:                       # Retains table records permanently across builds
+  pgadmin_data:                        # Retains pgAdmin layout presets across builds
+
+networks:
+  quantra_network:
+    driver: bridge

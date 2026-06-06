@@ -1,7 +1,34 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="Agentic AI Backend Workspace")
+from core.database import engine, Base
+from api.v1.roles import router as roles_router
+from api.v1.permissions import router as permissions_router
+from api.v1.users import router as users_router
+from api.v1.customer import router as customer_router
 
-@app.get("/")
-def read_root():
-    return {"status": "online", "message": "Agent System Initialized"}
+# Auto-generate database tables on startup
+Base.metadata.create_all(bind=engine)
+
+# Initialize the Quantra Core Engine
+app = FastAPI(
+    title="Quantra API",
+    description="Enterprise Access Control Kernel & Autonomous Operations Platform for Quantra",
+    version="1.0.0"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+app.include_router(customer_router, prefix="/api/v1")
+app.include_router(users_router, prefix="/api/v1")
+app.include_router(roles_router, prefix="/api/v1")
+app.include_router(permissions_router, prefix="/api/v1")
+
+@app.get("/", tags=["Root"])
+def root_status():
+    return {"status": "online", "system": "Quantra API Gateway"}
