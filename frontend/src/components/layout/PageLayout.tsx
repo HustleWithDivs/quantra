@@ -11,6 +11,11 @@ const MasterData = lazy(() => import('../../pages/MasterData'));
 const ProductData = lazy(() => import('../../pages/ProductData'));
 const Customer = lazy(() => import('../../pages/Customer'));
 const UserManagement = lazy(() => import('../../pages/UserManagement'));
+const QuantraButtonExample = lazy(()=>import('../../pages/examples/QuantraButtonExample'))
+const QuantraInputFieldExample = lazy(()=>import('../../pages/examples/QuantraInputFieldExample'))
+const QuantraTableExample = lazy(()=>import('../../pages/examples/QuantraTableExample'))
+const QuantraModalExample = lazy(()=>import('../../pages/examples/QuantraModalExample'))
+const QuantraWidgetExample = lazy(()=>import('../../pages/examples/QuantraWidgetExample'))
 
 // Centralized UI loading indicator fallback
 const PageLoader =() =>(
@@ -48,6 +53,11 @@ const PageLayout=({theme,setTheme}) =>{
                 <Route path="/product-data" element={<ProductData />} />
                 <Route path="/customer" element={<Customer />} />
                 <Route path="/user-management" element={<UserManagement />} />
+                <Route path="/button-example" element={<QuantraButtonExample />} />
+                <Route path="/input-example" element={<QuantraInputFieldExample />} />
+                <Route path="/table-example" element={<QuantraTableExample />} />
+                <Route path="/modal-example" element={<QuantraModalExample />} />
+                <Route path="/widget-example" element={<QuantraWidgetExample />} />
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>
             </Suspense>

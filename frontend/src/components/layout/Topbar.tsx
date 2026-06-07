@@ -44,6 +44,14 @@ const Topbar=({theme,setTheme, onToggleSidebar }) =>{
             </Button>
             
             <NavDropdown title="User" id="navbarScrollingDropdown" align="end">
+              <NavDropdown.Item href="#Examples">Settings</NavDropdown.Item>
+              <NavDropdown.Item href="/button-example">Button Example</NavDropdown.Item>
+              <NavDropdown.Item href="/input-example">Input Example</NavDropdown.Item>
+              <NavDropdown.Item href="/table-example">Table Example</NavDropdown.Item>
+              <NavDropdown.Item href="/modal-example">Modal Example</NavDropdown.Item>
+              <NavDropdown.Item href="/widget-example">Widget Example</NavDropdown.Item>
+              
+              <NavDropdown.Divider />
               <NavDropdown.Item href="#settings">Settings</NavDropdown.Item>
               <NavDropdown.Divider />
               <NavDropdown.Item href="#logout">Logout</NavDropdown.Item>
