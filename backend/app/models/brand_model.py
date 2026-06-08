@@ -13,8 +13,6 @@ class Brand(Base):
     description = Column(String(500), unique=True, nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), default=datetime.utcnow, nullable=False)
-    created_by = Column(UUID(as_uuid=True), nullable=True)
-    
-    # Keeping your exact schema types for these two inverted fields:
-    modified_by = Column(TIMESTAMP(timezone=True), nullable=True)
-    modified_at = Column(BigInteger, nullable=True)
+    created_by = Column(UUID(as_uuid=True), ForeignKey("users.user_id"), nullable=True)
+    modified_at = Column(TIMESTAMP(timezone=True), nullable=True)
+    modified_by = Column(UUID(as_uuid=True), ForeignKey("users.user_id"), nullable=True)
