@@ -1,12 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from core.exceptions import setup_exception_handlers
-from core.database import engine, Base
-from api.v1.auth import router as auth_router
-from api.v1.roles import router as roles_router
-from api.v1.permissions import router as permissions_router
-from api.v1.users import router as users_router
-from api.v1.customer import router as customer_router
+from app.core.exceptions import setup_exception_handlers
+from app.core.database import engine, Base
+from app.api.v1.auth import router as auth_router
+from app.api.v1.roles import router as roles_router
+from app.api.v1.permissions import router as permissions_router
+from app.api.v1.users import router as users_router
+from app.api.v1.customer import router as customer_router
+from app.api.v1.brand import router as brand_router
 
 # Auto-generate database tables on startup
 Base.metadata.create_all(bind=engine)
@@ -31,6 +32,7 @@ app.include_router(customer_router, prefix="/api/v1")
 app.include_router(users_router, prefix="/api/v1")
 app.include_router(roles_router, prefix="/api/v1")
 app.include_router(permissions_router, prefix="/api/v1")
+app.include_router(brand_router, prefix="/api/v1")
 
 @app.get("/", tags=["Root"])
 def root_status():

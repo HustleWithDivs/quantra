@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 # Load environmental variables from our .env file
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://quantra:Quantra%40123@db:5432/quantra_ops")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://quantra:Quantra@123@quantra_db:5432/quantra_ops")
 
 # Create the core SQLAlchemy engine
 engine = create_engine(

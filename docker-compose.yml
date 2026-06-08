@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # 1. Quantra Dedicated Database Engine
   db:
-    image: postgres:15-alpine
+    image: postgres:15
     container_name: quantra_db
     restart: always
     environment:
@@ -11,7 +11,7 @@ services:
       POSTGRES_PASSWORD: Quantra@123   # Raw text works perfectly inside compose files
       POSTGRES_DB: quantra_ops
     ports:
-      - "5432:5432"                   # Exposes DB natively to your machine
+      - "5433:5432"                   # Exposes DB natively to your machine
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -40,7 +40,7 @@ services:
     container_name: quantra_backend
     restart: always
     ports:
-      - "8000:8000"
+      - "8010:8000"
     volumes:
       - ./backend:/app
     environment:
