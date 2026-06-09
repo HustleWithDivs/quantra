@@ -61,7 +61,7 @@ def create_user(
     """
     Register a new system user profile and map initial authorization access capabilities.
     """
-    current_user_id = None # Connected to JWT lookup later
+    #current_user_id = None # Connected to JWT lookup later
     
     new_user_db = UserService.create_user_with_roles(
         db=db, 

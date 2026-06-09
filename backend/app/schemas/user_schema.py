@@ -1,12 +1,8 @@
 from uuid import UUID
 from datetime import datetime
 from typing import List, Optional
-from pydantic import BaseModel, EmailStr, ConfigDict, Field
+from pydantic import BaseModel, EmailStr, ConfigDict, Field, model_validator
 
-from uuid import UUID
-from datetime import datetime
-from typing import List, Optional
-from pydantic import BaseModel, EmailStr, ConfigDict, model_validator
 
 class UserRead(BaseModel):
     user_id: UUID
