@@ -231,3 +231,5 @@ setup.ps1
 setup.sh
 .DS_Store
 backend/.python-version
+package-lock.json
+frontend/.env
