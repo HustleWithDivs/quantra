@@ -1,4 +1,5 @@
 from uuid import UUID
+from datetime import datetime
 from fastapi import HTTPException, status
 from typing import List, Optional
 from sqlalchemy.orm import Session, joinedload
@@ -48,8 +49,8 @@ class UserService:
             )
 
         # 2. Verify all assigned roles exist atomically
-        if user_in.role_ids:
-            distinct_role_ids = set(user_in.role_ids)
+        if user_in.role_id:
+            distinct_role_ids = set(user_in.role_id)
             existing_roles_count = db.query(Role).filter(Role.role_id.in_(distinct_role_ids)).count()
             if existing_roles_count != len(distinct_role_ids):
                 raise HTTPException(
@@ -75,9 +76,9 @@ class UserService:
             db.flush() # Secure user_id for junction bindings
 
             # 4. Map user to roles inside the same transaction context
-            for r_id in user_in.role_ids:
-                user_role_binding = UserRole(user_id=new_user.user_id, role_id=r_id)
-                db.add(user_role_binding)
+            new_binding = UserRole(user_id=user_id, role_id=user_in.role_id)
+            db.add(new_binding)
+            
 
             db.commit()
             db.refresh(new_user)

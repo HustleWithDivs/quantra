@@ -1,5 +1,6 @@
 # Byte-compiled / optimized / DLL files
 backend/app/__pycache__
+backend/app/api/v1/__pycache__/users.cpython-311.pyc
 backend/__pycache__/
 backend/*.py[codz]
 backend/*$py.class

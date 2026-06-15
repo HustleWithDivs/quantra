@@ -44,8 +44,7 @@ class UserCreate(BaseModel):
     password: str = Field(..., min_length=8, description="Plain text password, will be hashed securely.")
     gender: str = Field(..., max_length=1, description="M / F / O")
     is_active: bool = True
-    role_ids: List[UUID] = Field(default=[], description="Optional array of initial Role UUIDs to assign to this user.")
-
+    role_id: Optional[UUID] = Field(None, description="The single Role UUID to assign to this user. Overwrites any existing role.")
 class UserResponseData(BaseModel):
     user_id: UUID
     first_name: str

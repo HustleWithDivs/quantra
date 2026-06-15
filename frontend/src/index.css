@@ -54,7 +54,7 @@
   width: 100%;
   max-width: 100%;
   margin: 0 auto;
-  text-align: center;
+  text-align: left;
   min-height: 100svh;
   display: flex;
   flex-direction: column;
@@ -108,3 +108,23 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+.avatar-circle {
+  width: 30px;
+  height: 30px;
+  background-color: var(--bs-info); 
+  color: #ffffff;
+  border-radius: 50%;
+  
+  /* Flexbox Centering */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Typography */
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  user-select: none;
+}
+

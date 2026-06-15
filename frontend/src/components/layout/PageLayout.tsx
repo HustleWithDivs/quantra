@@ -10,7 +10,9 @@ const Dashboard = lazy(() => import('../../pages/Dashboard'));
 const MasterData = lazy(() => import('../../pages/MasterData'));
 const ProductData = lazy(() => import('../../pages/ProductData'));
 const Customer = lazy(() => import('../../pages/Customer'));
-const UserManagement = lazy(() => import('../../pages/UserManagement'));
+const Users = lazy(() => import('../../pages/user-management/Users'));
+const Roles = lazy(() => import('../../pages/user-management/Roles'));
+const Settings = lazy(() => import('../../pages/Settings'));
 const QuantraButtonExample = lazy(()=>import('../../pages/examples/QuantraButtonExample'))
 const QuantraInputFieldExample = lazy(()=>import('../../pages/examples/QuantraInputFieldExample'))
 const QuantraTableExample = lazy(()=>import('../../pages/examples/QuantraTableExample'))
@@ -52,7 +54,9 @@ const PageLayout=({theme,setTheme}) =>{
                 <Route path="/master-data" element={<MasterData />} />
                 <Route path="/product-data" element={<ProductData />} />
                 <Route path="/customer" element={<Customer />} />
-                <Route path="/user-management" element={<UserManagement />} />
+                <Route path="/user-management/users" element={<Users />} />
+                <Route path="/user-management/roles" element={<Roles />} />
+                <Route path="/settings" element={<Settings />} />
                 <Route path="/button-example" element={<QuantraButtonExample />} />
                 <Route path="/input-example" element={<QuantraInputFieldExample />} />
                 <Route path="/table-example" element={<QuantraTableExample />} />
