@@ -1,5 +1,6 @@
 # Byte-compiled / optimized / DLL files
 backend/app/__pycache__
+backend/app/api/v1/__pycache__/users.cpython-311.pyc
 backend/__pycache__/
 backend/*.py[codz]
 backend/*$py.class
@@ -230,3 +231,5 @@ setup.ps1
 setup.sh
 .DS_Store
 backend/.python-version
+package-lock.json
+frontend/.env

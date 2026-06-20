@@ -1,3 +1,4 @@
+import logging
 from uuid import UUID
 from typing import List, Optional
 from fastapi import APIRouter, Depends, Query, status
@@ -7,9 +8,15 @@ from app.schemas.response_schema import APIResponse
 from app.schemas.user_schema import UserRead, UserCreate, UserResponseData, UserUpdate
 from app.services.user_service import UserService
 from app.core.database import get_db
-from app.core.dependency import PermissionChecker
+from app.core.dependency import PermissionChecker, get_current_user
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/users", tags=["Users"])
+
+
+# =========================================================================
+# 1. STATIC/EXPLICIT ROUTING PATHS (Must be declared first!)
+# =========================================================================
 
 @router.get(
     "", 
@@ -28,74 +35,78 @@ def list_users(
         users_db = UserService.get_all_users(
             db=db, 
             limit=limit, 
-            offset=offset, 
+            offset=offset, \
             is_active=is_active, 
             search=search
         )
-        
-        # Mapping executes model_validate which handles flattening the roles array automatically
         users_data = [UserRead.model_validate(user) for user in users_db]
-        
-        return APIResponse.success(
-            code=200,
-            message="User directory with role assignments retrieved successfully",
-            data=users_data
-        )
-        
+        return APIResponse.success(data=users_data)
     except Exception as e:
-        return APIResponse.fail(
-            code=500,
-            message=f"Failed to fetch user list: {str(e)}"
-        )
+        return APIResponse.fail(message=str(e))
+
 
 @router.post(
-    "", 
+    "",
     response_model=APIResponse[UserResponseData],
     status_code=status.HTTP_201_CREATED
 )
 def create_user(
-    payload: UserCreate,
+    payload: UserCreate, 
     db: Session = Depends(get_db),
-    current_user: User = Depends(PermissionChecker("users:create_user"))
+    current_user: User = Depends(PermissionChecker("users:create_users"))
 ):
-    """
-    Register a new system user profile and map initial authorization access capabilities.
-    """
-    current_user_id = None # Connected to JWT lookup later
-    
-    new_user_db = UserService.create_user_with_roles(
-        db=db, 
-        user_in=payload, 
-        current_user_id=current_user_id
-    )
-    
-    response_payload = UserResponseData.model_validate(new_user_db)
-    
+    current_user_id = None
+    new_user_db = UserService.create_user(db=db, user_in=payload, current_user_id=current_user_id)
     return APIResponse.success(
         code=201,
-        message="User profile registered and roles assigned successfully",
-        data=response_payload
+        message="User account and security associations built successfully",
+        data=UserResponseData.model_validate(new_user_db)
     )
-@router.put(
-    "/{user_id}", 
+
+
+@router.get(
+    "/profile", 
     response_model=APIResponse[UserResponseData],
     status_code=status.HTTP_200_OK
 )
-def update_user(
-    user_id: UUID,
-    payload: UserUpdate,
+def get_current_user_profile(
     db: Session = Depends(get_db),
-    current_user: User = Depends(PermissionChecker("users:view_user","users:update_user"))
+    current_user: User = Depends(get_current_user)
 ):
     """
-    Update a user's core credentials and reassign their unique authorization role.
+    Fetch the currently authenticated user's profile metadata records.
     """
-    current_user_id = None # Connected to auth middleware later
-    
+    try:
+        logger.info(f"👉 DOCKER DEBUG USER: {current_user.user_id}")
+    except AttributeError:
+        logger.info(f"👉 DOCKER DEBUG USER: {getattr(current_user, '__dict__', current_user)}")
+
+    user_db = UserService.get_user_by_id(db=db, user_id=current_user.user_id)
+    return APIResponse.success(
+        code=200,
+        message="Authenticated profile metrics retrieved successfully",
+        data=UserResponseData.model_validate(user_db)
+    )
+
+
+@router.put(
+    "/profile", 
+    response_model=APIResponse[UserResponseData],
+    status_code=status.HTTP_200_OK
+)
+def update_current_user_profile(
+    payload: UserUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Update the authenticated user's profile details.
+    """
+    current_user_id = current_user.user_id
     updated_user_db = UserService.update_user(
         db=db, 
-        user_id=user_id, 
-        role_in=payload, # Maps to user_in parameter
+        user_id=current_user.user_id, 
+        user_in=payload, 
         current_user_id=current_user_id
     )
     
@@ -104,6 +115,12 @@ def update_user(
         message="User profile and exclusive role configuration synchronized successfully",
         data=UserResponseData.model_validate(updated_user_db)
     )
+
+
+# =========================================================================
+# 2. DYNAMIC PATH VARIABLE ROUTING (Must be declared last!)
+# =========================================================================
+
 @router.get(
     "/{user_id}", 
     response_model=APIResponse[UserResponseData],
@@ -125,6 +142,35 @@ def get_user_details(
     )
 
 
+@router.put(
+    "/{user_id}", 
+    response_model=APIResponse[UserResponseData],
+    status_code=status.HTTP_200_OK
+)
+def update_user(
+    user_id: UUID,
+    payload: UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(PermissionChecker("users:view_user","users:update_user"))
+):
+    """
+    Modify core account metrics and exclusive operational security roles matrix structures.
+    """
+    current_user_id = None 
+    updated_user_db = UserService.update_user(
+        db=db, 
+        user_id=user_id, 
+        user_in=payload, 
+        current_user_id=current_user_id
+    )
+    
+    return APIResponse.success(
+        code=200,
+        message="User profile and exclusive role configuration synchronized successfully",
+        data=UserResponseData.model_validate(updated_user_db)
+    )
+
+
 @router.delete(
     "/{user_id}", 
     response_model=APIResponse[dict],
@@ -136,11 +182,11 @@ def delete_user(
     current_user: User = Depends(PermissionChecker("users:view_user","users:delete_users"))
 ):
     """
-    Permanently delete a user account and revoke all system access privileges.
+    Permanently purge a user profile record completely.
     """
     UserService.delete_user(db=db, user_id=user_id)
     return APIResponse.success(
         code=200,
-        message="User account and role bindings permanently purged",
+        message="User profile removed successfully",
         data={}
     )
