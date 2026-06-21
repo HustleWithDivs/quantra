@@ -1,18 +1,16 @@
 import axios from 'axios';
 
 export const api = axios.create({
-  baseURL: import.meta.env.REACT_APP_API_BASE_URL || 'http://localhost:8000/api/v1',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1',
   headers: {
     'Content-Type': 'application/json',
   },
 });
-
 // Response interceptor acting as an automatic session-expiry watchdog
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     const originalRequest = error.config;
-
     // Bypass redirect rules during explicit login calls so validation error states parse correctly
     if (originalRequest.url?.includes('/auth/login')) {
       return Promise.reject(error);
@@ -35,4 +33,5 @@ api.interceptors.response.use(
 
     return Promise.reject(error);
   }
+
 );

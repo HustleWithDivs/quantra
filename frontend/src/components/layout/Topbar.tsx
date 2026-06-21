@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Container, Form, Nav, Navbar, NavDropdown, Spinner } from 'react-bootstrap';
-import { BiMenu, BiLogOutCircle, BiCog, BiUser } from 'react-icons/bi';
+import { BiMenu, BiLogOutCircle, BiCog } from 'react-icons/bi';
 import { useNavigate } from 'react-router-dom';
 import logo from '../../assets/Logo-Dark-withTag.png'; 
 import { useLogout } from '../../hooks/auth/useLogout';
@@ -17,9 +17,9 @@ export const Topbar: React.FC<TopbarProps> = ({ theme, setTheme, onToggleSidebar
   const navigate = useNavigate();
   const { handleExecuteLogout, isLoggingOut } = useLogout();
   const { user } = useAuth(); // Extract active user properties dictionary from global state cache
-  console.log( user?.first_name)
+  
   // Dynamically resolve display naming string context based on loaded active models
-  const userDisplayName = `${user?.first_name} ${user?.last_name}`||'Quantra Operator';
+  const userDisplayName = user?.first_name?`${user?.first_name} ${user?.last_name}`:'Quantra Operator';
 
   return (
     <Navbar expand="lg" className="bg-body-tertiary border-bottom px-3 w-100">
