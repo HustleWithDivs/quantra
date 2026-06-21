@@ -66,7 +66,7 @@ def create_role(
     Aborts automatically if any invalid permission ID is passed.
     """
     # Placeholder current_user_id; will be wired into JWT dependency later
-    current_user_id = None 
+    current_user_id = current_user.user_id 
     
     # The service layer handles verification and atomic commits/rollbacks
     new_role_db = RoleService.create_role_with_permissions(
@@ -122,7 +122,7 @@ def update_role(
     """
     Update basic role parameters and synchronize its mapping permissions.
     """
-    current_user_id = None # Integrated with Auth later
+    current_user_id = current_user.user_id # Integrated with Auth later
     updated_role = RoleService.update_role(db=db, role_id=role_id, role_in=payload, current_user_id=current_user_id)
     
     return APIResponse.success(

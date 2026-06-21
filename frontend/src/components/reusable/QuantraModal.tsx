@@ -7,7 +7,7 @@ interface QuantraModalProps {
   show: boolean;
   onClose: () => void;
   title: string;
-  size?: 'sm' | 'lg' | 'xl';
+  size?: 'sm'| 'md' | 'lg' | 'xl';
   fullscreen?: true | 'sm-down' | 'md-down' | 'lg-down' | 'xl-down' | 'xxl-down';
   children: React.ReactNode;
   footerActions?: React.ReactNode; 
