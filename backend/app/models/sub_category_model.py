@@ -7,31 +7,19 @@ from app.core.database import Base
 
 
 class CategorySubCategory(Base):
-    """
-    Explicit Association Model representing the Many-to-Many connectivity matrix
-    between Categories and SubCategories following strict OOP architectural design.
-    """
     __tablename__ = "category_sub_category"
+    category_id = Column(UUID(as_uuid=True), ForeignKey("category.category_id", ondelete="CASCADE"), primary_key=True, nullable=False)
+    sub_category_id = Column(UUID(as_uuid=True), ForeignKey("sub_category.sub_category_id", ondelete="CASCADE"), primary_key=True, nullable=False)
 
-    category_id = Column(
-        UUID(as_uuid=True),
-        ForeignKey("category.category_id", ondelete="CASCADE"),
-        primary_key=True,
-        nullable=False
-    )
-    sub_category_id = Column(
-        UUID(as_uuid=True),
-        ForeignKey("sub_category.sub_category_id", ondelete="CASCADE"),
-        primary_key=True,
-        nullable=False
-    )
+
+class SubCategoryProductType(Base):
+    """Moved here to be defined BEFORE SubCategory uses its table attribute"""
+    __tablename__ = "subcategory_product_type"
+    sub_category_id = Column(UUID(as_uuid=True), ForeignKey("sub_category.sub_category_id", ondelete="CASCADE"), primary_key=True, nullable=False)
+    product_type_id = Column(UUID(as_uuid=True), ForeignKey("product_type.product_type_id", ondelete="CASCADE"), primary_key=True, nullable=False)
 
 
 class SubCategory(Base):
-    """
-    Core SubCategory Entity Model handling the lowest tier organizational 
-    nodes mapped to multiple parent business category domains.
-    """
     __tablename__ = "sub_category"
 
     sub_category_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
@@ -43,15 +31,15 @@ class SubCategory(Base):
     modified_at = Column(TIMESTAMP(timezone=True), nullable=True)
     modified_by = Column(UUID(as_uuid=True), nullable=True)
 
-    # Many-to-Many relationship pointing back up to categories
     categories = relationship(
         "Category",
         secondary="category_sub_category",
         back_populates="sub_categories"
     )
-    # Add this inside your SubCategory model class:
+
+    # SUCCESS: SubCategoryProductType is now in scope!
     product_types = relationship(
         "ProductType",
-        secondary="subcategory_product_type",
+        secondary=SubCategoryProductType.__table__,  
         back_populates="sub_categories"
     )
