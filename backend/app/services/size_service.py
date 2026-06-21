@@ -3,8 +3,8 @@ from typing import List, Optional
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_
-from app.models.master.size_model import Size
-from app.schemas.master.size_schema import SizeRead ,SizeCreate,SizeUpdate
+from app.models.size_model import Size
+from app.schemas.size_schema import SizeRead ,SizeCreate,SizeUpdate
 from datetime import datetime
 
 class SizeService:

@@ -3,8 +3,8 @@ from typing import List, Optional
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_
-from app.models.master.color_model import Color
-from app.schemas.master.color_schema import ColorRead ,ColorCreate,ColorUpdate
+from app.models.color_model import Color
+from app.schemas.color_schema import ColorRead ,ColorCreate,ColorUpdate
 from datetime import datetime
 
 class ColorService:

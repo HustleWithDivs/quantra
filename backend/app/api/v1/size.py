@@ -3,9 +3,9 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.services.master.size_service import SizeService
+from app.services.size_service import SizeService
 from app.schemas.response_schema import APIResponse
-from app.schemas.master.size_schema import SizeRead, SizeCreate,SizeUpdate
+from app.schemas.size_schema import SizeRead, SizeCreate,SizeUpdate
 
 
 

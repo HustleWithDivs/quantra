@@ -5,13 +5,13 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 from app.models.user_model import User
 from app.schemas.response_schema import APIResponse
-from app.schemas.user_schema import UserRead, UserCreate, UserResponseData, UserUpdate
-from app.services.user_service import UserService
+from app.schemas.business_category_scehma import BusinessCategoryRead, BusinessCategoryCreate, BusinessCategoryResponseData, BusinessCategoryUpdate
+from app.services.business_category_service import BusinessCategoryService
 from app.core.database import get_db
 from app.core.dependency import PermissionChecker, get_current_user
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/users", tags=["Users"])
+router = APIRouter(prefix="/business-category", tags=["Business Category"])
 
 
 # =========================================================================
@@ -20,60 +20,51 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 @router.get(
     "", 
-    response_model=APIResponse[List[UserRead]],
+    response_model=APIResponse[List[BusinessCategoryRead]],
     status_code=status.HTTP_200_OK
 )
-def list_users(
+def list_business_categories(
     limit: int = Query(default=100, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
     is_active: Optional[bool] = Query(default=None),
     search: Optional[str] = Query(default=None),
     db: Session = Depends(get_db),
-    current_user: User = Depends(PermissionChecker("users:view_user"))
+    current_user: User = Depends(PermissionChecker("business_category:view_business_category"))
 ):
     try:
-        users_db = UserService.get_all_users(
+        business_category_db = BusinessCategoryService.get_all_business_categories(
             db=db, 
             limit=limit, 
-            offset=offset, \
+            offset=offset,
             is_active=is_active, 
             search=search
         )
-        users_data = [UserRead.model_validate(user) for user in users_db]
-        return APIResponse.success(data=users_data)
+        business_category_data = [BusinessCategoryRead.model_validate(business_category) for businenss_category in business_category_db]
+        return APIResponse.success(data=business_category_data)
     except Exception as e:
         return APIResponse.fail(message=str(e))
 
 
 @router.post(
     "",
-    response_model=APIResponse[UserResponseData],
+    response_model=APIResponse[BusinessCategoryResponseData],
     status_code=status.HTTP_201_CREATED
 )
-def create_user(
-    payload: UserCreate, 
+def create_business_category(
+    payload: BusinessCategoryCreate, 
     db: Session = Depends(get_db),
-    current_user: User = Depends(PermissionChecker("users:create_users"))
+    current_user: User = Depends(PermissionChecker("business_category:create_business_category"))
 ):
+    
     current_user_id = current_user.user_id # Integrated with Auth later
 
-    new_user_db = UserService.create_user(db=db, user_in=payload, current_user_id=current_user_id)
+    new_business_category_db = BusinessCategoryService.create_business_category(db=db, business_category_in=payload, current_user_id=current_user_id)
     return APIResponse.success(
         code=201,
-        message="User account and security associations built successfully",
-        data=UserResponseData.model_validate(new_user_db)
+        message="Business Category created successfully",
+        data=BusinessCategoryResponseData.model_validate(new_business_category_db)
     )
 
-
-@router.get(
-    "/profile", 
-    response_model=APIResponse[UserResponseData],
-    status_code=status.HTTP_200_OK
-)
-def get_current_user_profile(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
     """
     Fetch the currently authenticated user's profile metadata records.
     """
@@ -86,109 +77,81 @@ def get_current_user_profile(
     return APIResponse.success(
         code=200,
         message="Authenticated profile metrics retrieved successfully",
-        data=UserResponseData.model_validate(user_db)
+        data=BusinessCategoryResponseData.model_validate(user_db)
     )
-
-
-@router.put(
-    "/profile", 
-    response_model=APIResponse[UserResponseData],
-    status_code=status.HTTP_200_OK
-)
-def update_current_user_profile(
-    payload: UserUpdate,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """
-    Update the authenticated user's profile details.
-    """
-    current_user_id = current_user.user_id
-    updated_user_db = UserService.update_user(
-        db=db, 
-        user_id=current_user.user_id, 
-        user_in=payload, 
-        current_user_id=current_user_id
-    )
-    
-    return APIResponse.success(
-        code=200,
-        message="User profile and exclusive role configuration synchronized successfully",
-        data=UserResponseData.model_validate(updated_user_db)
-    )
-
 
 # =========================================================================
 # 2. DYNAMIC PATH VARIABLE ROUTING (Must be declared last!)
 # =========================================================================
 
 @router.get(
-    "/{user_id}", 
-    response_model=APIResponse[UserResponseData],
+    "/{business_category_id}", 
+    response_model=APIResponse[BusinessCategoryResponseData],
     status_code=status.HTTP_200_OK
 )
-def get_user_details(
-    user_id: UUID,
+def get_business_category_details(
+    business_category_id: UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(PermissionChecker("users:view_user"))
+    current_user: User = Depends(PermissionChecker("business_category:view_business_category"))
 ):
     """
     Retrieve comprehensive profile details for a specific user, including their mapped role.
     """
-    user_db = UserService.get_user_by_id(db=db, user_id=user_id)
+    business_category_db = BusinessCategoryService.get_business_category_by_id(db=db, business_category_id=business_category_id)
     return APIResponse.success(
         code=200,
         message="User details retrieved successfully",
-        data=UserResponseData.model_validate(user_db)
+        data=BusinessCategoryResponseData.model_validate(business_category_db)
     )
 
 
 @router.put(
-    "/{user_id}", 
-    response_model=APIResponse[UserResponseData],
+    "/{business_category_id}", 
+    response_model=APIResponse[BusinessCategoryResponseData],
     status_code=status.HTTP_200_OK
 )
 def update_user(
-    user_id: UUID,
-    payload: UserUpdate,
+    business_category_id: UUID,
+    payload: BusinessCategoryUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(PermissionChecker("users:view_user","users:update_user"))
+    current_user: User = Depends(PermissionChecker("business_category:view_business_category","business_category:update_business_category"))
 ):
     """
     Modify core account metrics and exclusive operational security roles matrix structures.
     """
     current_user_id = current_user.user_id # Integrated with Auth later
 
-    updated_user_db = UserService.update_user(
+    updated_business_category_db = BusinessCategoryService.update_business_category(
         db=db, 
-        user_id=user_id, 
-        user_in=payload, 
+        business_category_id=business_category_id, 
+        business_category_in=payload, 
         current_user_id=current_user_id
     )
     
     return APIResponse.success(
         code=200,
         message="User profile and exclusive role configuration synchronized successfully",
-        data=UserResponseData.model_validate(updated_user_db)
+        data=BusinessCategoryResponseData.model_validate(updated_business_category_db)
     )
 
 
 @router.delete(
-    "/{user_id}", 
+    "/{business_category_id}", 
     response_model=APIResponse[dict],
     status_code=status.HTTP_200_OK
 )
 def delete_user(
-    user_id: UUID,
+    business_category_id: UUID,
     db: Session = Depends(get_db),
     current_user: User = Depends(PermissionChecker("users:view_user","users:delete_users"))
 ):
     """
     Permanently purge a user profile record completely.
     """
-    UserService.delete_user(db=db, user_id=user_id)
+
+    BusinessCategoryService.delete_user(db=db, business_category_id=business_category_id)
     return APIResponse.success(
         code=200,
-        message="User profile removed successfully",
+        message="Business Category removed successfully",
         data={}
     )

@@ -9,15 +9,10 @@ from app.api.v1.users import router as users_router
 from app.api.v1.customer import router as customer_router
 from app.api.v1.brand import router as brand_router
 from app.api.v1.supplier import router as supplier_router
-# from app.core.master_router import create_master_router
-from app.api.v1.material import router as material_router
 from app.api.v1.color import router as color_router
 from app.api.v1.size import router as size_router
 from app.api.v1.business_category import router as business_category_router
-from app.api.v1.category import router as category_router
-from app.api.v1.sub_category import router as sub_category_router
-from app.api.v1.department import router as department_router
-from app.api.v1.product_type import router as product_type_router
+
 
 # Auto-generate database tables on startup
 Base.metadata.create_all(bind=engine)
@@ -44,18 +39,10 @@ app.include_router(roles_router, prefix="/api/v1")
 app.include_router(permissions_router, prefix="/api/v1")
 app.include_router(brand_router, prefix="/api/v1")
 app.include_router(supplier_router, prefix="/api/v1")
-app.include_router(material_router, prefix="/api/v1")
 app.include_router(color_router, prefix="/api/v1")
 app.include_router(size_router, prefix="/api/v1")
 app.include_router(business_category_router, prefix="/api/v1")
-app.include_router(category_router, prefix="/api/v1")
-app.include_router(sub_category_router, prefix="/api/v1")
-app.include_router(department_router, prefix="/api/v1")
-app.include_router(product_type_router, prefix="/api/v1")
 
-# Master router (IMPORTANT FIX)
-# master_router = create_master_router("color")
-# app.include_router(master_router, prefix="/api/v1/master", tags=["Master"])
 
 @app.get("/", tags=["Root"])
 def root_status():
