@@ -1,7 +1,7 @@
 from uuid import UUID
 from datetime import datetime
 from typing import List, Optional
-from pydantic import BaseModel, EmailStr, ConfigDict, Field, model_validator
+from pydantic import BaseModel, EmailStr, ConfigDict, Field
 
 
 class BusinessCategoryRead(BaseModel):

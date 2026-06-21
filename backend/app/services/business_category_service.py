@@ -4,12 +4,10 @@ from fastapi import HTTPException, status
 from typing import List, Optional
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_
-from app.models.role_model import Role
 from app.models.business_category_model import BusinessCategory
 from app.schemas.business_category_scehma import BusinessCategoryCreate, BusinessCategoryUpdate
 from app.core.security import SecurityHelper
 class BusinessCategoryService:
-    @staticmethod
     def get_all_business_categories(
         db: Session, 
         limit: int = 100, 
@@ -20,7 +18,6 @@ class BusinessCategoryService:
         """
         Retrieves business categories along with their associated role configurations using an eager JOIN lookup.
         """
-        # joinedload pulls the associated roles efficiently in a single query
         query = db.query(BusinessCategory)
         
         if is_active is not None:
@@ -36,7 +33,7 @@ class BusinessCategoryService:
             )
             
         return query.order_by(BusinessCategory.created_at.desc()).offset(offset).limit(limit).all()
-    
+
     @staticmethod
     def create_business_category(db: Session, business_category_in:BusinessCategoryCreate, current_user_id: Optional[UUID] = None) -> BusinessCategory:
         # 1. Verify email uniqueness
@@ -87,7 +84,7 @@ class BusinessCategoryService:
                 )
         try:
             # 4. Update basic business category details
-            update_data = business_category_in.model_dump(exclude_unset=True, exclude={'role_id'})
+            update_data = business_category_in.model_dump(exclude_unset=True)
             for key, value in update_data.items():
                 setattr(business_category, key, value)
             
@@ -106,36 +103,55 @@ class BusinessCategoryService:
             )
     @staticmethod
     def get_business_category_by_id(db: Session, business_category_id: UUID) -> BusinessCategory:
-        """
-        Fetches a single business category  along with their single assigned role.
-        Raises a 404 error if the business category is missing.
-        """
         business_category = db.query(BusinessCategory).filter(BusinessCategory.business_category_id == business_category_id).first()
         
         if not business_category:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Business Category  with ID '{business_category_id}' could not be found."
+                detail=f"Business Category with ID '{business_category_id}' could not be found."
             )
         return business_category
 
     @staticmethod
+    def validate_business_category_deletion(db: Session, business_category_id: UUID) -> None:
+        """
+        Validates if a business category can be safely deleted.
+        """
+        # CRITICAL FIX: Inline the import statement inside this method.
+        # This keeps the global scope of this file completely decoupled from Department models.
+        from app.models.department_model import Department
+
+        has_active_departments = db.query(Department).filter(
+            Department.business_category_id == business_category_id,
+            Department.is_active == True
+        ).first()
+        
+        if has_active_departments:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Deletion blocked. Active departments are currently assigned to this Business Category."
+            )
+
+    @staticmethod
     def delete_business_category(db: Session, business_category_id: UUID) -> None:
         """
-        Permanently removes a business category record and purges their role assignment.
+        Permanently removes a business category record after ensuring no active child departments exist.
         """
-        business_category = db.query(BusinessCategory).filter(BusinessCategory.business_category_id == business_category_id).first()
+        business_category = db.query(BusinessCategory).filter(
+            BusinessCategory.business_category_id == business_category_id
+        ).first()
+        
         if not business_category:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Business Category  with ID '{business_category_id}' could not be found."
+                detail=f"Business Category with ID '{business_category_id}' could not be found."
             )
             
-        try:
-            # 1. Clear role assignment in junction table first
-         
+        # 3. INTERCEPT AND EXECUTE VALIDATION RULE BEFORE INITIATING DELETION WHENEVER ENFORCED
+        BusinessCategoryService.validate_business_category_deletion(db, business_category_id)
             
-            # 2. Erase the core business category  record
+        try:
+            # Erase the core business category record safely
             db.delete(business_category)
             db.commit()
             
@@ -143,5 +159,6 @@ class BusinessCategoryService:
             db.rollback()
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to delete business category  due to a database error: {str(e)}"
+                detail=f"Failed to delete business category due to a database error: {str(e)}"
             )
+        

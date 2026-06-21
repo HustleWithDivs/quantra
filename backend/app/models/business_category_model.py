@@ -1,12 +1,10 @@
+# app/models/business_category_model.py
 import uuid
-from sqlalchemy import Column, String, Boolean, TIMESTAMP, ForeignKey
+from sqlalchemy import Column, String, Boolean, TIMESTAMP
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.core.database import Base
-
-
-
 
 class BusinessCategory(Base):
     __tablename__ = "business_category"
@@ -19,3 +17,8 @@ class BusinessCategory(Base):
     created_by = Column(UUID(as_uuid=True), nullable=True)
     modified_at = Column(TIMESTAMP(timezone=True), nullable=True)
     modified_by = Column(UUID(as_uuid=True), nullable=True)
+
+    departments = relationship(
+        "Department", 
+        back_populates="business_category", 
+    )

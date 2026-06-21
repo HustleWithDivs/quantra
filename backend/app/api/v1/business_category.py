@@ -39,7 +39,7 @@ def list_business_categories(
             is_active=is_active, 
             search=search
         )
-        business_category_data = [BusinessCategoryRead.model_validate(business_category) for businenss_category in business_category_db]
+        business_category_data = [BusinessCategoryRead.model_validate(business_category) for business_category in business_category_db]
         return APIResponse.success(data=business_category_data)
     except Exception as e:
         return APIResponse.fail(message=str(e))
@@ -65,21 +65,6 @@ def create_business_category(
         data=BusinessCategoryResponseData.model_validate(new_business_category_db)
     )
 
-    """
-    Fetch the currently authenticated user's profile metadata records.
-    """
-    try:
-        logger.info(f"👉 DOCKER DEBUG USER: {current_user.user_id}")
-    except AttributeError:
-        logger.info(f"👉 DOCKER DEBUG USER: {getattr(current_user, '__dict__', current_user)}")
-
-    user_db = UserService.get_user_by_id(db=db, user_id=current_user.user_id)
-    return APIResponse.success(
-        code=200,
-        message="Authenticated profile metrics retrieved successfully",
-        data=BusinessCategoryResponseData.model_validate(user_db)
-    )
-
 # =========================================================================
 # 2. DYNAMIC PATH VARIABLE ROUTING (Must be declared last!)
 # =========================================================================
@@ -95,12 +80,12 @@ def get_business_category_details(
     current_user: User = Depends(PermissionChecker("business_category:view_business_category"))
 ):
     """
-    Retrieve comprehensive profile details for a specific user, including their mapped role.
+    Retrieve comprehensive business category details for a specific business category id.
     """
     business_category_db = BusinessCategoryService.get_business_category_by_id(db=db, business_category_id=business_category_id)
     return APIResponse.success(
         code=200,
-        message="User details retrieved successfully",
+        message="Business Categories retrieved successfully",
         data=BusinessCategoryResponseData.model_validate(business_category_db)
     )
 
@@ -110,14 +95,14 @@ def get_business_category_details(
     response_model=APIResponse[BusinessCategoryResponseData],
     status_code=status.HTTP_200_OK
 )
-def update_user(
+def update_business_category(
     business_category_id: UUID,
     payload: BusinessCategoryUpdate,
     db: Session = Depends(get_db),
     current_user: User = Depends(PermissionChecker("business_category:view_business_category","business_category:update_business_category"))
 ):
     """
-    Modify core account metrics and exclusive operational security roles matrix structures.
+    Modify business category and its attributes.
     """
     current_user_id = current_user.user_id # Integrated with Auth later
 
@@ -130,7 +115,7 @@ def update_user(
     
     return APIResponse.success(
         code=200,
-        message="User profile and exclusive role configuration synchronized successfully",
+        message="Business Category synchronized successfully",
         data=BusinessCategoryResponseData.model_validate(updated_business_category_db)
     )
 
@@ -140,16 +125,16 @@ def update_user(
     response_model=APIResponse[dict],
     status_code=status.HTTP_200_OK
 )
-def delete_user(
+def delete_business_category(
     business_category_id: UUID,
     db: Session = Depends(get_db),
-    current_user: User = Depends(PermissionChecker("users:view_user","users:delete_users"))
+    current_user: User = Depends(PermissionChecker("business_category:view_business_category","business_category:delete_business_category"))
 ):
     """
-    Permanently purge a user profile record completely.
+    Permanently purge a business category record completely.
     """
 
-    BusinessCategoryService.delete_user(db=db, business_category_id=business_category_id)
+    BusinessCategoryService.delete_business_category(db=db, business_category_id=business_category_id)
     return APIResponse.success(
         code=200,
         message="Business Category removed successfully",

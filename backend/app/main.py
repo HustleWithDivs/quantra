@@ -12,6 +12,9 @@ from app.api.v1.supplier import router as supplier_router
 from app.api.v1.color import router as color_router
 from app.api.v1.size import router as size_router
 from app.api.v1.business_category import router as business_category_router
+from app.api.v1.department import router as department_router
+from app.api.v1.category import router as category_router  
+from app.api.v1.sub_category import router as sub_category_router  
 
 
 # Auto-generate database tables on startup
@@ -42,6 +45,10 @@ app.include_router(supplier_router, prefix="/api/v1")
 app.include_router(color_router, prefix="/api/v1")
 app.include_router(size_router, prefix="/api/v1")
 app.include_router(business_category_router, prefix="/api/v1")
+app.include_router(department_router,prefix="/api/v1")
+app.include_router(category_router,prefix="/api/v1")
+app.include_router(sub_category_router,prefix="/api/v1")
+
 
 
 @app.get("/", tags=["Root"])
