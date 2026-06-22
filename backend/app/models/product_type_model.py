@@ -21,6 +21,6 @@ class ProductType(Base):
 
     sub_categories = relationship(
         "SubCategory",
-        secondary=SubCategoryProductType.__table__,
+        secondary="subcategory_product_type",
         back_populates="product_types"
     )

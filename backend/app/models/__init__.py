@@ -7,6 +7,7 @@ from app.models.product_type_model import ProductType, SubCategoryProductType
 from app.models.sub_category_model import SubCategory
 from app.models.supplier_model import Supplier
 from app.models.user_model import User 
+from app.models.product_model import Product, ProductVariant
 
 
 __all__ = [
@@ -19,6 +20,7 @@ __all__ = [
     "User",
     "SubCategory",
     "ProductType",
-    "SubCategoryProductType"
-    
+    "SubCategoryProductType",
+    "Product",
+    "ProductVariant"
 ]

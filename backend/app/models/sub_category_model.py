@@ -13,7 +13,6 @@ class CategorySubCategory(Base):
 
 
 class SubCategoryProductType(Base):
-    """Moved here to be defined BEFORE SubCategory uses its table attribute"""
     __tablename__ = "subcategory_product_type"
     sub_category_id = Column(UUID(as_uuid=True), ForeignKey("sub_category.sub_category_id", ondelete="CASCADE"), primary_key=True, nullable=False)
     product_type_id = Column(UUID(as_uuid=True), ForeignKey("product_type.product_type_id", ondelete="CASCADE"), primary_key=True, nullable=False)
@@ -40,6 +39,6 @@ class SubCategory(Base):
     # SUCCESS: SubCategoryProductType is now in scope!
     product_types = relationship(
         "ProductType",
-        secondary=SubCategoryProductType.__table__,  
+        secondary="subcategory_product_type",  
         back_populates="sub_categories"
     )
