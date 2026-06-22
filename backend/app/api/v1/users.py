@@ -55,7 +55,8 @@ def create_user(
     db: Session = Depends(get_db),
     current_user: User = Depends(PermissionChecker("users:create_users"))
 ):
-    current_user_id = None
+    current_user_id = current_user.user_id # Integrated with Auth later
+
     new_user_db = UserService.create_user(db=db, user_in=payload, current_user_id=current_user_id)
     return APIResponse.success(
         code=201,
@@ -156,7 +157,8 @@ def update_user(
     """
     Modify core account metrics and exclusive operational security roles matrix structures.
     """
-    current_user_id = None 
+    current_user_id = current_user.user_id # Integrated with Auth later
+
     updated_user_db = UserService.update_user(
         db=db, 
         user_id=user_id, 

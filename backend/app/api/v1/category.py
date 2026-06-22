@@ -1,89 +1,94 @@
+import logging
 from uuid import UUID
 from typing import List, Optional
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, status, HTTPException
 from sqlalchemy.orm import Session
-from app.core.database import get_db
-from app.services.master.category_service import CategoryService
+from app.models.user_model import User
 from app.schemas.response_schema import APIResponse
-from app.schemas.master.category_schema import CategoryRead, CategoryCreate,CategoryUpdate
+from app.schemas.category_schema import CategoryRead, CategoryCreate, CategoryResponseData, CategoryUpdate
+from app.services.category_service import CategoryService
+from app.core.database import get_db
+from app.core.dependency import PermissionChecker
 
-
-
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/category", tags=["Category"])
-@router.get("", response_model=APIResponse[List[CategoryRead]])
-def list_category(
-    limit: int = Query(default=100, ge=1),
+
+@router.get(
+    "", 
+    response_model=APIResponse[List[CategoryRead]],
+    status_code=status.HTTP_200_OK
+)
+def list_categories(
+    limit: int = Query(default=100, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
+    is_active: Optional[bool] = Query(default=None),
     search: Optional[str] = Query(default=None),
     db: Session = Depends(get_db),
-    # current_user: User = Depends(PermissionChecker("customers:view_customer"))
+    current_user: User = Depends(PermissionChecker("category:view_category"))
 ):
-    """Get global directory list of all registered customers."""
-    category = CategoryService.get_all_category(db, limit, offset, search)
-    data = [CategoryRead.model_validate(b) for b in category]
-    return APIResponse.success(message="Category records fetched successfully", data=data)
+    try:
+        categories_db = CategoryService.get_all_categories(
+            db=db, limit=limit, offset=offset, is_active=is_active, search=search
+        )
+        categories_data = [CategoryRead.model_validate(c) for c in categories_db]
+        return APIResponse.success(code=200, message="Categories retrieved successfully", data=categories_data)
+    except Exception as e:
+        logger.error(f"Error listing categories: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal processing fault.")
 
-@router.post("", status_code=status.HTTP_201_CREATED, response_model=APIResponse[CategoryRead])
+@router.get(
+    "/{category_id}", 
+    response_model=APIResponse[CategoryResponseData],
+    status_code=status.HTTP_200_OK
+)
+def get_category_details(
+    category_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(PermissionChecker("category:view_category"))
+):
+    category_db = CategoryService.get_category_by_id(db=db, category_id=category_id)
+    return APIResponse.success(code=200, message="Category retrieved successfully", data=category_db)
+
+@router.post(
+    "", 
+    response_model=APIResponse[CategoryResponseData],
+    status_code=status.HTTP_201_CREATED
+)
 def create_category(
     payload: CategoryCreate,
     db: Session = Depends(get_db),
-    current_user: UUID = Depends(lambda: None)  # replace with JWT later
+    current_user: User = Depends(PermissionChecker("category:create_category"))
 ):
-    category = CategoryService.create_category(
-        db=db,
-        payload=payload,
-        current_user_id=current_user
+    new_category = CategoryService.create_category(
+        db=db, category_in=payload, current_user_id=current_user.user_id
     )
-
-    response_data = CategoryRead.model_validate(category)
-
-    return APIResponse.success(
-        code=201,
-        message="Category created successfully",
-        data=response_data
-    )
+    return APIResponse.success(code=201, message="Category provisioned successfully", data=new_category)
 
 @router.put(
-    "/{category_id}",
-    response_model=APIResponse[CategoryRead],
+    "/{category_id}", 
+    response_model=APIResponse[CategoryResponseData],
     status_code=status.HTTP_200_OK
 )
 def update_category(
     category_id: UUID,
     payload: CategoryUpdate,
     db: Session = Depends(get_db),
-    current_user: UUID = Depends(lambda: None)  # replace with JWT user later
+    current_user: User = Depends(PermissionChecker("category:update_category"))
 ):
-    """
-    Update an existing category.
-    """
-
     updated_category = CategoryService.update_category(
-        db=db,
-        category_id=category_id,
-        payload=payload,
-        current_user_id=current_user
+        db=db, category_id=category_id, category_in=payload, current_user_id=current_user.user_id
     )
+    return APIResponse.success(code=200, message="Category updated successfully", data=updated_category)
 
-    response_data = CategoryRead.model_validate(updated_category)
-
-    return APIResponse.success(
-        code=200,
-        message="Category synchronized successfully",
-        data=response_data
-    )  
-
-      
-
-@router.delete("/{category_id}", response_model=APIResponse[dict])
+@router.delete(
+    "/{category_id}", 
+    response_model=APIResponse[dict],
+    status_code=status.HTTP_200_OK
+)
 def delete_category(
     category_id: UUID,
     db: Session = Depends(get_db),
+    current_user: User = Depends(PermissionChecker("category:delete_category"))
 ):
     CategoryService.delete_category(db=db, category_id=category_id)
-
-    return APIResponse.success(
-        code=200,
-        message="Category deleted successfully",
-        data={}
-    )
+    return APIResponse.success(code=200, message="Category removed successfully", data={})

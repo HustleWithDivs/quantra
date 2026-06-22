@@ -3,7 +3,7 @@ import { Form, Row, Col, Card, Spinner } from 'react-bootstrap';
 import { QuantraModal } from '../reusable/QuantraModal';
 import { QuantraInputField } from '../reusable/QuantraInputField';
 import { QuantraButton } from '../reusable/QuantraButton';
-import { useRoleForm } from '../../hooks/user-management/useRoleForm'; // Import custom hook
+import { useRoleForm, type TransformedPermission } from '../../hooks/user-management/useRoleForm'; // Import custom hook
 import { type Role } from '../../api/roleApi';
 
 interface RoleFormModalProps {
@@ -88,25 +88,25 @@ export const RoleFormModal: React.FC<RoleFormModalProps> = ({ show, onClose, onS
             <p className="text-muted small mb-3">Select capabilities for role</p>
 
             <Row className="g-3">
-              {permissions.map((perm) => (
-                <Col md={6} key={perm.permission_id}>
+              {permissions.map((permission_group) => (
+                <Col md={6} key={permission_group.permission_group}>
                   <Card className="h-100 border-0 shadow-sm bg-body-tertiary">
                     <Card.Body className="p-3">
                       <h6 className="text-primary fw-bold text-capitalize border-bottom pb-2 mb-2">
-                        {perm.slug}
+                        {permission_group.permission_group}
                       </h6>
-                      
+                      {permission_group.permissions.map((permission:TransformedPermission) => (
                         <Form.Check
-                          key={perm.permission_id}
+                          key={permission.permission_id}
                           type="checkbox"
-                          id={`perm-check-${perm.permission_id}`}
-                          label={perm.description}
-                          checked={selectedPermissions.includes(perm.permission_id)}
-                          onChange={() => handleTogglePermission(perm.permission_id)}
+                          id={`perm-check-${permission.permission_id}`}
+                          label={permission.permission_name}
+                          checked={selectedPermissions.includes(permission.permission_id)}
+                          onChange={() => handleTogglePermission(permission.permission_id)}
                           className="small my-2"
-                          title={perm.description}
+                          title={permission.permission_name}
                         />
-                      
+                    ))}
                     </Card.Body>
                   </Card>
                 </Col>

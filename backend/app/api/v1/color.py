@@ -3,9 +3,9 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.services.master.color_service import ColorService
+from app.services.color_service import ColorService
 from app.schemas.response_schema import APIResponse
-from app.schemas.master.color_schema import ColorRead, ColorCreate,ColorUpdate
+from app.schemas.color_schema import ColorRead, ColorCreate,ColorUpdate
 
 
 

@@ -5,11 +5,21 @@ import * as yup from 'yup';
 import { toast } from 'react-toastify';
 import { roleApi, type Role, type Permission, type RolePayload } from '../../api/roleApi';
 
-interface UseRoleFormProps {
+export interface UseRoleFormProps {
   show: boolean;
   onClose: () => void;
   onSave: () => void;
   editingRole: Role | null;
+}
+export interface TransformedPermission {
+  permission_name: string;
+  permission_id: string;
+  description: string;
+}
+
+export interface GroupedPermission {
+  permission_group: string;
+  permissions: TransformedPermission[];
 }
 
 const roleValidationSchema = yup.object().shape({
@@ -22,7 +32,7 @@ export const useRoleForm = ({ show, onClose, onSave, editingRole }: UseRoleFormP
   const isEditMode = !!editingRole;
   
   // Core Operational States
-  const [permissions, setPermissions] = useState<Permission[]>([]);
+  const [permissions, setPermissions] = useState<GroupedPermission[]>([]);
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [isPageLoading, setIsPageLoading] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
@@ -46,7 +56,7 @@ export const useRoleForm = ({ show, onClose, onSave, editingRole }: UseRoleFormP
         // 1. Fetch system privilege directory entries
         const permRes = await roleApi.listPermissions();
         if (permRes.requestStatus) {
-          setPermissions(permRes.data || []);
+          setPermissions(groupPermissions(permRes.data || []));
         } else {
           toast.error(permRes.message || 'Failed to populate global permission mappings.');
           return;
@@ -96,6 +106,46 @@ export const useRoleForm = ({ show, onClose, onSave, editingRole }: UseRoleFormP
       prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code]
     );
   };
+  // Helper function to turn "product_type" into "Product Type"
+
+function groupPermissions(dataArray: Permission[]): GroupedPermission[] {
+  // Helper function to turn snake_case into Title Case
+  const formatText = (str: string): string => {
+    return str
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
+  // Explicitly type the reducer accumulator as a dictionary map
+  const groupedMap = dataArray.reduce<Record<string, GroupedPermission>>((acc, item) => {
+    if (!item || !item.slug) return acc;
+
+    const [groupRaw, actionRaw] = item.slug.split(':');
+    
+    // Fallback logic in case slug doesn't contain a ':'
+    if (!actionRaw) return acc;
+
+    const groupName = formatText(groupRaw);
+    const actionName = formatText(actionRaw);
+
+    if (!acc[groupName]) {
+      acc[groupName] = {
+        permission_group: groupName,
+        permissions: []
+      };
+    }
+
+    acc[groupName].permissions.push({
+      permission_name: actionName,
+      permission_id: item.permission_id
+    });
+
+    return acc;
+  }, {});
+
+  return Object.values(groupedMap);
+}
 
   // Submit Handler Mutation Wrapper
   const onSubmitForm = async (data: any) => {

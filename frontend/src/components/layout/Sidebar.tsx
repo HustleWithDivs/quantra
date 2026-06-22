@@ -23,6 +23,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isExpanded }) => {
   // Track open/close state of the nested inline dropdown block (used when expanded)
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
+
   // Auto-expand the internal menu if the current path is a child route (only when sidebar is open)
   useEffect(() => {
     if (isExpanded && (location.pathname === '/user-management/users' || location.pathname === '/user-management/roles')) {

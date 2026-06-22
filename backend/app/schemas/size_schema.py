@@ -22,5 +22,5 @@ class SizeCreate(BaseModel):
 class SizeUpdate(BaseModel):
     size_name: Optional[str] = Field(None, max_length=200)
     size_description: Optional[str] = None
-   
+    
     # permission_ids: Optional[List[UUID]] = Field(None, description="The complete list of permission IDs for this role. Overwrites current links.")

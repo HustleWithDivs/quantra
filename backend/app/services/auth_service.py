@@ -58,7 +58,7 @@ class AuthService:
         db.add(db_refresh)
         db.commit()
 
-        return TokenPairResponse(access_token=access_token, refresh_token=refresh_token_str)
+        return TokenPairResponse(access_token=access_token, refresh_token=refresh_token_str, first_name=user.first_name, last_name=user.last_name)
 
     @staticmethod
     def revoke_refresh_token(db: Session, refresh_token: str) -> None:

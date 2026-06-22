@@ -18,7 +18,6 @@ export default function Avatar({ name }: AvatarProps): React.JSX.Element {
     // Safely extract from first element and last element
     const firstInitial = nameParts[0]?.charAt(0) || '';
     const lastInitial = nameParts[nameParts.length - 1]?.charAt(0) || '';
-    console.log(lastInitial)
     initials = `${firstInitial}${lastInitial}`;
   }
 

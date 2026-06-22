@@ -81,18 +81,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const isSuccess = rawAxiosData?.requestStatus === true || (response as any).status === 200;
 
     if (isSuccess && innerPayload?.access_token) {
-      const { access_token, refresh_token } = innerPayload;
+      const { access_token, refresh_token, first_name, last_name} = innerPayload;
       
       // 2. Bind authorization context straight to our active Axios configuration instance
       api.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
       
       setAccessToken(access_token);
-      setUser({ email: payload.email });
+      setUser({ email: payload.email, first_name:first_name, last_name:last_name });
 
       // Persist access tokens cleanly to survive native web browser refreshes
       localStorage.setItem('at_ctx', access_token);
       localStorage.setItem('rt_ctx', refresh_token || '');
       localStorage.setItem('user_email', payload.email);
+      localStorage.setItem('user_fname', innerPayload.first_name);
+      localStorage.setItem('user_lname', innerPayload.last_name);
+
     } else {
       throw new Error(rawAxiosData?.message || 'The authorization security gateway rejected the provided credentials.');
     }

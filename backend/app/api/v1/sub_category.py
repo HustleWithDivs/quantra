@@ -1,89 +1,99 @@
+import logging
 from uuid import UUID
 from typing import List, Optional
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query, status, HTTPException
 from sqlalchemy.orm import Session
-from app.core.database import get_db
-from app.services.master.sub_category_service import SubCategoryService
+from app.models.user_model import User
 from app.schemas.response_schema import APIResponse
-from app.schemas.master.sub_category_schema import SubCategoryRead, SubCategoryCreate,SubCategoryUpdate
+from app.schemas.sub_category_schema import SubCategoryRead, SubCategoryCreate, SubCategoryResponseData, SubCategoryUpdate
+from app.services.sub_category_service import SubCategoryService
+from app.core.database import get_db
+from app.core.dependency import PermissionChecker
+
+logger = logging.getLogger(__name__)
+router = APIRouter(prefix="/sub-category", tags=["SubCategory"])
 
 
-
-router = APIRouter(prefix="/sub_category", tags=["SubCategory"])
-@router.get("", response_model=APIResponse[List[SubCategoryRead]])
-def list_sub_category(
-    limit: int = Query(default=100, ge=1),
+@router.get(
+    "",
+    response_model=APIResponse[List[SubCategoryRead]],
+    status_code=status.HTTP_200_OK
+)
+def list_sub_categories(
+    limit: int = Query(default=100, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
+    is_active: Optional[bool] = Query(default=None),
     search: Optional[str] = Query(default=None),
     db: Session = Depends(get_db),
-    # current_user: User = Depends(PermissionChecker("customers:view_customer"))
+    current_user: User = Depends(PermissionChecker("sub_category:view_sub_category"))
 ):
-    """Get global directory list of all registered customers."""
-    sub_category = SubCategoryService.get_all_sub_category(db, limit, offset, search)
-    data = [SubCategoryRead.model_validate(b) for b in sub_category]
-    return APIResponse.success(message="sub_category records fetched successfully", data=data)
+    try:
+        sub_categories_db = SubCategoryService.get_all_sub_categories(
+            db=db, limit=limit, offset=offset, is_active=is_active, search=search
+        )
+        sub_categories_data = [SubCategoryRead.model_validate(sc) for sc in sub_categories_db]
+        return APIResponse.success(code=200, message="SubCategories matrix pulled successfully", data=sub_categories_data)
+    except Exception as e:
+        logger.error(f"Error handling subcategories query loop: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal processing fault.")
 
-@router.post("", status_code=status.HTTP_201_CREATED, response_model=APIResponse[SubCategoryRead])
+
+@router.get(
+    "/{sub_category_id}",
+    response_model=APIResponse[SubCategoryResponseData],
+    status_code=status.HTTP_200_OK
+)
+def get_sub_category_details(
+    sub_category_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(PermissionChecker("sub_category:view_sub_category"))
+):
+    sub_category_db = SubCategoryService.get_sub_category_by_id(db=db, sub_category_id=sub_category_id)
+    return APIResponse.success(code=200, message="SubCategory instance retrieved", data=sub_category_db)
+
+
+@router.post(
+    "",
+    response_model=APIResponse[SubCategoryResponseData],
+    status_code=status.HTTP_201_CREATED
+)
 def create_sub_category(
     payload: SubCategoryCreate,
     db: Session = Depends(get_db),
-    current_user: UUID = Depends(lambda: None)  # replace with JWT later
+    current_user: User = Depends(PermissionChecker("sub_category:create_sub_category"))
 ):
-    sub_category = SubCategoryService.create_sub_category(
-        db=db,
-        payload=payload,
-        current_user_id=current_user
+    new_sub_category = SubCategoryService.create_sub_category(
+        db=db, sub_category_in=payload, current_user_id=current_user.user_id
     )
+    return APIResponse.success(code=201, message="SubCategory provisioned successfully", data=new_sub_category)
 
-    response_data = SubCategoryRead.model_validate(sub_category)
-
-    return APIResponse.success(
-        code=201,
-        message="sub_category created successfully",
-        data=response_data
-    )
 
 @router.put(
     "/{sub_category_id}",
-    response_model=APIResponse[SubCategoryRead],
+    response_model=APIResponse[SubCategoryResponseData],
     status_code=status.HTTP_200_OK
 )
 def update_sub_category(
     sub_category_id: UUID,
     payload: SubCategoryUpdate,
     db: Session = Depends(get_db),
-    current_user: UUID = Depends(lambda: None)  # replace with JWT user later
+    current_user: User = Depends(PermissionChecker("sub_category:update_sub_category"))
 ):
-    """
-    Update an existing sub_category.
-    """
-
     updated_sub_category = SubCategoryService.update_sub_category(
-        db=db,
-        sub_category_id=sub_category_id,
-        payload=payload,
-        current_user_id=current_user
+        db=db, sub_category_id=sub_category_id, sub_category_in=payload, current_user_id=current_user.user_id
     )
+    return APIResponse.success(code=200, message="SubCategory targets updated seamlessly", data=updated_sub_category)
 
-    response_data = SubCategoryRead.model_validate(updated_sub_category)
 
-    return APIResponse.success(
-        code=200,
-        message="sub_category synchronized successfully",
-        data=response_data
-    )  
-
-      
-
-@router.delete("/{sub_category_id}", response_model=APIResponse[dict])
+@router.delete(
+    "/{sub_category_id}",
+    response_model=APIResponse[dict],
+    status_code=status.HTTP_200_OK
+)
 def delete_sub_category(
     sub_category_id: UUID,
     db: Session = Depends(get_db),
+    current_user: User = Depends(PermissionChecker("sub_category:delete_sub_category"))
 ):
     SubCategoryService.delete_sub_category(db=db, sub_category_id=sub_category_id)
-
-    return APIResponse.success(
-        code=200,
-        message="sub_category deleted successfully",
-        data={}
-    )
+    return APIResponse.success(code=200, message="SubCategory elements terminated", data={})
