@@ -10,8 +10,15 @@ class BrandRead(BaseModel):
     description: str
     is_active: bool
     created_at: datetime
-
     model_config = ConfigDict(from_attributes=True)
+
+class BrandResponseData(BaseModel):
+    brand_id: UUID
+    brand_name: str
+    description: str
+    is_active: bool
+    created_at: datetime
+    model_config = ConfigDict(from_attributes=True)    
 
 class BrandCreate(BaseModel):
     brand_name: str = Field(..., max_length=200, description="Unique name for the enterprise role")

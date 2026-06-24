@@ -4,7 +4,7 @@ from sqlalchemy import Column, String, Boolean, TIMESTAMP, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.core.database import Base
-
+from app.models.product_type_model import ProductType
 
 class CategorySubCategory(Base):
     __tablename__ = "category_sub_category"
@@ -40,6 +40,6 @@ class SubCategory(Base):
     # SUCCESS: SubCategoryProductType is now in scope!
     product_types = relationship(
         "ProductType",
-        secondary=SubCategoryProductType.__table__,  
+        secondary="subcategory_product_type",  
         back_populates="sub_categories"
     )

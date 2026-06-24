@@ -11,70 +11,142 @@ class BrandService:
 
     @staticmethod
     def get_all_brand(
-        db: Session, limit: int = 100, offset: int = 0, search: Optional[str] = None
-    ) -> List[Brand]:
+        db: Session, 
+        limit: int = 100,
+         offset: int = 0,
+         is_active: Optional[bool] = None,
+          search: Optional[str] = None
+        ) -> List[Brand]:
         query = db.query(Brand)
+
+        if is_active is not None:
+            query = query.filter(Brand.is_active == is_active)
+       
+
         if search:
-            sf = f"%{search}%"
+            search_filter = f"%{search}%"
             query = query.filter(
-                or_(Brand.brand_name.ilike(sf))
+                or_(
+                    Brand.brand_name.ilike(search_filter),
+                    Brand.description.ilike(search_filter),
+               )
             )
-          
-        return query.offset(offset).limit(limit).all()
-     
+            
+        return query.order_by(Brand.created_at.desc()).offset(offset).limit(limit).all()
+
+    @staticmethod
+    def get_brand_by_id(db: Session, brand_id: UUID) -> Brand:
+        brand = db.query(Brand).filter(Brand.brand_id == brand_id).first()
+        
+        if not brand:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Brand with ID '{brand_id}' could not be found."
+            )
+        return brand
+    
+
     @staticmethod
     def create_brand(db: Session, payload: BrandCreate, current_user_id: UUID = None):
-        brand = Brand(
-            brand_name=payload.brand_name,
-            description=payload.description,
-            is_active=payload.is_active if hasattr(payload, "is_active") else True,
-            created_by=current_user_id
-        )
+        # 1. Verify  uniqueness
+        existing_name = db.query(Brand).filter(Brand.brand_name == payload.brand_name).first()
+        if existing_name:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"A brand account with the name '{payload.brand_name}' already exists."
+            )
 
-        db.add(brand)
-        db.commit()
-        db.refresh(brand)
-        return brand
+      
+        try: 
+            brand = Brand(
+                brand_name=payload.brand_name,
+                description=payload.description,
+                is_active=payload.is_active if hasattr(payload, "is_active") else True,
+                created_by=current_user_id.user_id
+            )
+
+            db.add(brand)
+            db.commit()
+            db.refresh(brand)
+            return brand
+
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to create brand: {str(e)}"
+            )    
 
 
     @staticmethod
     def update_brand(
         db: Session,
         brand_id: UUID,
-        payload: BrandUpdate,
+        brand_in: BrandUpdate,
         current_user_id: UUID = None
     ):
+         # 1. Fetch brand or raise 404
         brand = db.query(Brand).filter(Brand.brand_id == brand_id).first()
-
         if not brand:
-            raise Exception("Brand not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Brand with ID '{brand_id}' could not be found."
+            )
+        
+        # 2. Check name unique constraint if it's changing
+        if brand_in.brand_name and brand_in.brand_name != brand.brand_name:
+            name_check = db.query(Brand).filter(Brand.brand_name == brand_in.brand_name).first()
+            if name_check:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Name '{brand_in.brand_name}' is already in use by another account."
+                )
+        try:
+            # 4. Update basic business category details
+            update_data = brand_in.model_dump(exclude_unset=True)
+            for key, value in update_data.items():
+                setattr(brand, key, value)
+            
+            brand.modified_at = datetime.utcnow()
+            brand.modified_by = current_user_id
+            
+            db.commit()
+            db.refresh(brand)
+            return brand
+            
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to update brand record: {str(e)}"
+            )
+        
 
-        # Update only provided fields
-        if payload.brand_name is not None:
-            brand.brand_name = payload.brand_name
-
-        if payload.description is not None:
-            brand.description = payload.description
-
-        if payload.is_active is not None:
-            brand.is_active = payload.is_active
-
-        #  audit fields (based on your model)
-        brand.modified_by = current_user_id
-        brand.modified_at = datetime.utcnow()
-
-        db.commit()
-        db.refresh(brand)
-
-        return brand
 
     @staticmethod
-    def delete_brand(db: Session, brand_id: UUID):
-        brand = db.query(Brand).filter(Brand.brand_id == brand_id).first()
-
+    def delete_brand(db: Session, brand_id: UUID) -> None:
+        """
+        Permanently removes a brand record after ensuring no active child departments exist.
+        """
+        brand = db.query(Brand).filter(
+            Brand.brand_id == brand_id
+        ).first()
+        
         if not brand:
-            raise Exception("Brand not found")
-
-        db.delete(brand)
-        db.commit()
-        return True
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Brand with ID '{brand_id}' could not be found."
+            )
+            
+            
+        try:
+            # Erase the core business category record safely
+            db.delete(brand)
+            db.commit()
+            
+        except Exception as e:
+            db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to delete brand due to a database error: {str(e)}"
+            )

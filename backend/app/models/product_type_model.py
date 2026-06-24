@@ -5,7 +5,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 # Import it from sub_category_model to use its table construct cleanly
-from app.models.sub_category_model import SubCategoryProductType
+
 
 class ProductType(Base):
     __tablename__ = "product_type"
@@ -21,6 +21,6 @@ class ProductType(Base):
 
     sub_categories = relationship(
         "SubCategory",
-        secondary=SubCategoryProductType.__table__,
+        secondary="subcategory_product_type",
         back_populates="product_types"
     )
