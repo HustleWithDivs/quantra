@@ -7,7 +7,8 @@ import Sidebar from './Sidebar';
 
 // 1. Lazy load your components right here inside the layout module
 const Dashboard = lazy(() => import('../../pages/Dashboard'));
-const MasterData = lazy(() => import('../../pages/MasterData'));
+const Brand = lazy(() => import('../../pages/master-data/brand'));
+const Supplier = lazy(() => import('../../pages/master-data/brand'));
 const ProductData = lazy(() => import('../../pages/ProductData'));
 const Customer = lazy(() => import('../../pages/Customer'));
 const Users = lazy(() => import('../../pages/user-management/Users'));
@@ -51,7 +52,8 @@ const PageLayout=({theme,setTheme}) =>{
               <Routes>
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/master-data" element={<MasterData />} />
+                <Route path="/master-data/brand" element={<Brand />} />
+                <Route path="/master-data/supplier" element={<Supplier />} />
                 <Route path="/product-data" element={<ProductData />} />
                 <Route path="/customer" element={<Customer />} />
                 <Route path="/user-management/users" element={<Users />} />
