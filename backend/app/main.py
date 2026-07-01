@@ -50,6 +50,7 @@ app.include_router(business_category_router, prefix="/api/v1")
 app.include_router(department_router,prefix="/api/v1")
 app.include_router(category_router,prefix="/api/v1")
 app.include_router(sub_category_router,prefix="/api/v1")
+app.include_router(product_router,prefix="/api/v1")
 
 
 
