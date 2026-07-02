@@ -1,3 +1,4 @@
+version: '3.8'
 
 services:
   # 1. Quantra Dedicated Database Engine
@@ -62,7 +63,7 @@ services:
       - ./frontend:/app
       - /app/node_modules              # Prevents local host overrides on dependencies
     environment:
-      - VITE_API_URL=http://localhost:8000/api/v1
+      - VITE_API_URL=http://localhost:8010
     depends_on:
       - backend                        # Ensures backend is listening before front-end mounts
     networks:

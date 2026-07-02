@@ -22,12 +22,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ isExpanded }) => {
   
   // Track open/close state of the nested inline dropdown block (used when expanded)
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-
+// Track open/close state of the nested inline dropdown block (used when expanded)
+  const [masterMenuOpen, setMasterMenuOpen] = useState(false);
 
   // Auto-expand the internal menu if the current path is a child route (only when sidebar is open)
   useEffect(() => {
     if (isExpanded && (location.pathname === '/user-management/users' || location.pathname === '/user-management/roles')) {
       setUserMenuOpen(true);
+    }
+  }, [location.pathname, isExpanded]);
+
+  // Auto-expand the internal menu if the current path is a child route (only when sidebar is open)
+  useEffect(() => {
+    if (isExpanded && (location.pathname === '/master-data/brand' || location.pathname === '/master-data/supplier')) {
+      setMasterMenuOpen(true);
     }
   }, [location.pathname, isExpanded]);
 
@@ -65,10 +73,104 @@ export const Sidebar: React.FC<SidebarProps> = ({ isExpanded }) => {
         </Nav.Link>
         
         {/* 2. Master Data */}
-        <Nav.Link as={Link} to="/master-data" className={`${getNavLinkClass('/master-data')} w-100`}>
+        {/* <Nav.Link as={Link} to="/master-data" className={`${getNavLinkClass('/master-data')} w-100`}>
           <BiBarChartSquare className="fs-4 flex-shrink-0" />
           {isExpanded && <span className="ms-3 fw-medium">Master Data</span>}
-        </Nav.Link>
+        </Nav.Link> */}
+        {/* 2. Master Data Row */}
+        <div className="w-100 position-relative">
+          {isExpanded ? (
+            /* --- EXPANDED MODE: Renders standard inline accordion dropdown --- */
+            <>
+              <div
+                onClick={() => setMasterMenuOpen(!masterMenuOpen)}
+                className={getNavLinkClass('/master-data/')}
+                style={{ cursor: 'pointer' }}
+              >
+                <div className="d-flex align-items-center">
+                  <FaUserShield className="fs-4 flex-shrink-0" />
+                  <span className="ms-3 fw-medium">Master Data</span>
+                </div>
+                <BiChevronDown 
+                  className="fs-5" 
+                  style={{ 
+                    transform: masterMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.2s'
+                  }} 
+                />
+              </div>
+
+              <Collapse in={masterMenuOpen}>
+                <div>
+                  <div className="d-flex flex-column ms-3 border-start ps-2 mt-1">
+                    <Nav.Link as={Link} to="/master-data/brand" className={getSubNavLinkClass('/master-data/brand')}>
+                      <FaUserAlt className="fs-5 flex-shrink-0 me-2" />
+                      <span>Brand</span>
+                    </Nav.Link>
+                    <Nav.Link as={Link} to="/master-data/supplier" className={getSubNavLinkClass('/master-data/supplier')}>
+                      <FaShieldAlt className="fs-5 flex-shrink-0 me-2" />
+                      <span>Supplier</span>
+                    </Nav.Link>
+                    <Nav.Link as={Link} to="/master-data/material" className={getSubNavLinkClass('/master-data/material')}>
+                      <FaShieldAlt className="fs-5 flex-shrink-0 me-2" />
+                      <span>Material</span>
+                    </Nav.Link>
+                  </div>
+                </div>
+              </Collapse>
+            </>
+          ) : (
+            /* --- COLLAPSED MODE: Renders a hoverable/clickable Popover Dropdown overlay --- */
+            <Dropdown drop="end" className="w-100 d-flex justify-content-center">
+              <Dropdown.Toggle 
+                variant="transparent" 
+                className={`p-0 border-0 d-flex align-items-center justify-content-center position-relative w-100 py-2 rounded  ${
+                  masterMenuOpen ? 'bg-primary text-white' : 'text-body'
+                }`}
+              >
+                <FaUserShield className="fs-4 flex-shrink-0" />
+                {/* Visual Indicator: Mini chevron overlay signifying that hidden options exist */}
+              
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu className="shadow-sm border py-2 px-1 m-0 ms-2 bg-body-tertiary">
+                <div className="px-3 py-1 mb-1 border-bottom text-muted small fw-bold">
+                  Master Data
+                </div>
+                <Dropdown.Item 
+                  as={Link} 
+                  to="/master-data/brand" 
+                  className={`rounded d-flex align-items-center px-3 py-2 my-1 ${
+                    location.pathname === '/master-data/brand' ? 'bg-primary text-white' : 'text-body'
+                  }`}
+                >
+                  <FaUserAlt className="fs-5 me-2 flex-shrink-0" />
+                  <span>Brand</span>
+                </Dropdown.Item>
+                <Dropdown.Item 
+                  as={Link} 
+                  to="/master-data/supplier" 
+                  className={`rounded d-flex align-items-center px-3 py-2 ${
+                    location.pathname === '/master-data/supplier' ? 'bg-primary text-white' : 'text-body'
+                  }`}
+                >
+                  <FaShieldAlt className="fs-5 me-2 flex-shrink-0" />
+                  <span>Supplier</span>
+                </Dropdown.Item>
+                <Dropdown.Item 
+                  as={Link} 
+                  to="/master-data/material" 
+                  className={`rounded d-flex align-items-center px-3 py-2 ${
+                    location.pathname === '/master-data/material' ? 'bg-primary text-white' : 'text-body'
+                  }`}
+                >
+                  <FaShieldAlt className="fs-5 me-2 flex-shrink-0" />
+                  <span>Material</span>
+                </Dropdown.Item>                
+              </Dropdown.Menu>
+            </Dropdown>
+          )}
+        </div>
 
         {/* 3. Product Data */}
         <Nav.Link as={Link} to="/product-data" className={`${getNavLinkClass('/product-data')} w-100`}>

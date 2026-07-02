@@ -43,13 +43,16 @@ const productValidationSchema = yup.object().shape({
   is_perishable: yup.boolean().default(false),
 });
 
+export type ProductTabKeys = 'core' | 'logistics' | 'variants';
+
 export const useProductForm = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const productId = searchParams.get('id');
   const isEditMode = !!productId;
 
-  const [currentStep, setCurrentStep] = useState<number>(1);
+  // Swapped from Step Number to Tab Keys
+  const [activeTab, setActiveTab] = useState<ProductTabKeys>('core');
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
@@ -60,7 +63,6 @@ export const useProductForm = () => {
   const [subCategories, setSubCategories] = useState<QunatraSelectOption[]>([]);
   const [productTypes, setProductTypes] = useState<QunatraSelectOption[]>([]);
   
-  // Auxiliary Metadata Select Lookups (Ready for API Integration)
   const [brands, setBrands] = useState<QunatraSelectOption[]>([]);
   const [suppliers, setSuppliers] = useState<QunatraSelectOption[]>([]);
   const [materials, setMaterials] = useState<QunatraSelectOption[]>([]);
@@ -77,17 +79,16 @@ export const useProductForm = () => {
   const watchCategory = watch('category_id');
   const watchSubCategory = watch('sub_category_id');
 
-  // Load Baseline Data & Meta Dropdowns
   useEffect(() => {
     const loadStaticLookups = async () => {
       try {
         const [resBC, resBrands, resSuppliers, resMaterials, resColors, resSizes] = await Promise.all([
           api.get('/business-category'),
-          api.get('/brands').catch(() => ({ data: { data: [] } })), // Fallback to empty until endpoints are live
-          api.get('/suppliers').catch(() => ({ data: { data: [] } })),
-          api.get('/materials').catch(() => ({ data: { data: [] } })),
-          api.get('/colors').catch(() => ({ data: { data: [] } })),
-          api.get('/sizes').catch(() => ({ data: { data: [] } }))
+          api.get('/brand').catch(() => ({ data: { data: [] } })),
+          api.get('/supplier').catch(() => ({ data: { data: [] } })),
+          api.get('/material').catch(() => ({ data: { data: [] } })),
+          api.get('/color').catch(() => ({ data: { data: [] } })),
+          api.get('/size').catch(() => ({ data: { data: [] } }))
         ]);
 
         setBusinessCategories(resBC.data.data.map((b: any) => ({ value: b.business_category_id, label: b.business_category_name })));
@@ -103,7 +104,6 @@ export const useProductForm = () => {
     loadStaticLookups();
   }, []);
 
-  // Cascading Dropdown Triggers
   useEffect(() => {
     if (!watchBusinessCategory) { setDepartments([]); return; }
     api.get('/departments', { params: { business_category_id: watchBusinessCategory } })
@@ -132,7 +132,6 @@ export const useProductForm = () => {
       .catch(() => setProductTypes([]));
   }, [watchSubCategory]);
 
-  // Edit Mode Loader Routine
   useEffect(() => {
     if (!isEditMode) return;
     productApi.getProductById(productId!).then(res => {
@@ -149,7 +148,7 @@ export const useProductForm = () => {
         : await productApi.createProduct(payload);
 
       if (res.requestStatus) {
-        toast.success(isEditMode ? 'Core product entry modified.' : 'Product and starting variant initialized.');
+        toast.success(isEditMode ? 'Core product entry modified.' : 'Product initialized successfully.');
         navigate('/product-data');
       } else {
         toast.error(res.message || 'Payload variables rejected.');
@@ -165,8 +164,8 @@ export const useProductForm = () => {
     register,
     handleSubmit,
     errors,
-    currentStep,
-    setCurrentStep,
+    activeTab,
+    setActiveTab,
     isSaving,
     isEditMode,
     businessCategories,
@@ -185,6 +184,6 @@ export const useProductForm = () => {
     },
     handleFormSubmission,
     cancelForm: () => navigate('/product-data'),
-    control
+    control,
   };
 };
