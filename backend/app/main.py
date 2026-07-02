@@ -17,6 +17,9 @@ from app.api.v1.category import router as category_router
 from app.api.v1.sub_category import router as sub_category_router  
 from app.api.v1.material import router as material 
 
+from app.api.v1.product import router as product_router  
+from fastapi.staticfiles import StaticFiles
+import os
 # Auto-generate database tables on startup
 Base.metadata.create_all(bind=engine)
 
@@ -26,7 +29,8 @@ app = FastAPI(
     description="Enterprise Access Control Kernel & Autonomous Operations Platform for Quantra",
     version="1.0.0"
 )
-
+os.makedirs(os.path.join("static", "uploads", "products"), exist_ok=True)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -49,6 +53,8 @@ app.include_router(department_router,prefix="/api/v1")
 app.include_router(category_router,prefix="/api/v1")
 app.include_router(sub_category_router,prefix="/api/v1")
 app.include_router(material,prefix="/api/v1")
+app.include_router(product_router,prefix="/api/v1")
+
 
 
 @app.get("/", tags=["Root"])

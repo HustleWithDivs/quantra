@@ -11,6 +11,8 @@ const Brand = lazy(() => import('../../pages/master-data/brand'));
 const Supplier = lazy(() => import('../../pages/master-data/supplier'));
 const Material = lazy(() => import('../../pages/master-data/material'));
 const ProductData = lazy(() => import('../../pages/ProductData'));
+// Injecting our brand new interactive Product Creator Wizard here
+const ProductWizardPage = lazy(() => import('../../pages/product/ProductWizardPage'));
 const Customer = lazy(() => import('../../pages/Customer'));
 const Users = lazy(() => import('../../pages/user-management/Users'));
 const Roles = lazy(() => import('../../pages/user-management/Roles'));
@@ -57,6 +59,7 @@ const PageLayout=({theme,setTheme}) =>{
                 <Route path="/master-data/supplier" element={<Supplier />} />
                 <Route path="/master-data/material" element={<Material />} />
                 <Route path="/product-data" element={<ProductData />} />
+                <Route path="/product-data/manage" element={<ProductWizardPage />} />
                 <Route path="/customer" element={<Customer />} />
                 <Route path="/user-management/users" element={<Users />} />
                 <Route path="/user-management/roles" element={<Roles />} />
