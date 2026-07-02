@@ -22,12 +22,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ isExpanded }) => {
   
   // Track open/close state of the nested inline dropdown block (used when expanded)
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-
+// Track open/close state of the nested inline dropdown block (used when expanded)
+  const [masterMenuOpen, setMasterMenuOpen] = useState(false);
 
   // Auto-expand the internal menu if the current path is a child route (only when sidebar is open)
   useEffect(() => {
     if (isExpanded && (location.pathname === '/user-management/users' || location.pathname === '/user-management/roles')) {
       setUserMenuOpen(true);
+    }
+  }, [location.pathname, isExpanded]);
+
+  // Auto-expand the internal menu if the current path is a child route (only when sidebar is open)
+  useEffect(() => {
+    if (isExpanded && (location.pathname === '/master-data/brand' || location.pathname === '/master-data/supplier')) {
+      setMasterMenuOpen(true);
     }
   }, [location.pathname, isExpanded]);
 
@@ -86,22 +94,26 @@ export const Sidebar: React.FC<SidebarProps> = ({ isExpanded }) => {
                 <BiChevronDown 
                   className="fs-5" 
                   style={{ 
-                    transform: userMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transform: masterMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)',
                     transition: 'transform 0.2s'
                   }} 
                 />
               </div>
 
-              <Collapse in={userMenuOpen}>
+              <Collapse in={masterMenuOpen}>
                 <div>
                   <div className="d-flex flex-column ms-3 border-start ps-2 mt-1">
                     <Nav.Link as={Link} to="/master-data/brand" className={getSubNavLinkClass('/master-data/brand')}>
                       <FaUserAlt className="fs-5 flex-shrink-0 me-2" />
                       <span>Brand</span>
                     </Nav.Link>
-                    <Nav.Link as={Link} to="/master-data/brand" className={getSubNavLinkClass('/master-data/brand')}>
+                    <Nav.Link as={Link} to="/master-data/supplier" className={getSubNavLinkClass('/master-data/supplier')}>
                       <FaShieldAlt className="fs-5 flex-shrink-0 me-2" />
-                      <span><Supplier></Supplier></span>
+                      <span>Supplier</span>
+                    </Nav.Link>
+                    <Nav.Link as={Link} to="/master-data/material" className={getSubNavLinkClass('/master-data/material')}>
+                      <FaShieldAlt className="fs-5 flex-shrink-0 me-2" />
+                      <span>Material</span>
                     </Nav.Link>
                   </div>
                 </div>
@@ -113,7 +125,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isExpanded }) => {
               <Dropdown.Toggle 
                 variant="transparent" 
                 className={`p-0 border-0 d-flex align-items-center justify-content-center position-relative w-100 py-2 rounded  ${
-                  userMenuOpen ? 'bg-primary text-white' : 'text-body'
+                  masterMenuOpen ? 'bg-primary text-white' : 'text-body'
                 }`}
               >
                 <FaUserShield className="fs-4 flex-shrink-0" />
@@ -145,6 +157,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isExpanded }) => {
                   <FaShieldAlt className="fs-5 me-2 flex-shrink-0" />
                   <span>Supplier</span>
                 </Dropdown.Item>
+                <Dropdown.Item 
+                  as={Link} 
+                  to="/master-data/material" 
+                  className={`rounded d-flex align-items-center px-3 py-2 ${
+                    location.pathname === '/master-data/material' ? 'bg-primary text-white' : 'text-body'
+                  }`}
+                >
+                  <FaShieldAlt className="fs-5 me-2 flex-shrink-0" />
+                  <span>Material</span>
+                </Dropdown.Item>                
               </Dropdown.Menu>
             </Dropdown>
           )}

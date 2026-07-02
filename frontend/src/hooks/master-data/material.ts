@@ -1,38 +1,38 @@
 import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'react-toastify';
-import { brandApi, type Brand } from '../../api/brandApi';
+import { materialApi, type Material } from '../../api/materialApi';
 import { useAuth } from '../../context/AuthContext';
-import { getBrandTableColumns } from '../../utilities/Master';
+import { getMaterialTableColumns } from '../../utilities/Master';
 
-export const useBrand = () => {
+export const useMaterial = () => {
   const { accessToken, isLoading: isAuthLoading } = useAuth();
 
   // Core Reactive States
-  const [brand, setBrand] = useState<Brand[]>([]);
+  const [Material, setMaterial] = useState<Material[]>([]);
   const [totalItems, setTotalItems] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // Table Matrices State Management
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [sortKey, setSortKey] = useState<string>('brand_name');
+  const [sortKey, setSortKey] = useState<string>('material_name');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   // Modal Overlay Visibilities
   const [formModalOpen, setFormModalOpen] = useState<boolean>(false);
-  const [selectedBrand, setSelectedBrand] = useState<Brand | null>(null);
+  const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState<boolean>(false);
-  const [brandToDelete, setBrandToDelete] = useState<Brand | null>(null);
+  const [materialToDelete, setMaterialToDelete] = useState<Material | null>(null);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
   // Read Directory Handler
-  const fetchBrand = async () => {
+  const fetchMaterial = async () => {
     if (isAuthLoading || !accessToken) return;
     setIsLoading(true);
     try {
-      const res = await brandApi.listBrand(searchTerm || undefined);
+      const res = await materialApi.listMaterial(searchTerm || undefined);
       if (res.requestStatus) {
-        setBrand(res.data || []);
+        setMaterial(res.data || []);
         setTotalItems(res.data?.length || 0);
       } else {
         toast.error(res.message || 'An error occurred while fetching role definitions.');
@@ -45,20 +45,20 @@ export const useBrand = () => {
   };
 
   useEffect(() => {
-    fetchBrand();
+    fetchMaterial();
   }, [accessToken, isAuthLoading, searchTerm]);
 
   // Destructive Removal Operation Handler
   const handleExecuteDelete = async () => {
-    if (!brandToDelete) return;
+    if (!materialToDelete) return;
     setIsDeleting(true);
     try {
-      const res = await brandApi.deleteBrand(brandToDelete.brand_id);
+      const res = await materialApi.deleteMaterial(materialToDelete.material_id);
       if (res.requestStatus) {
-        toast.success(`Brand profile "${brandToDelete.brand_name || (brandToDelete as any).brand_name}" has been deleted successfully.`);
+        toast.success(`Material profile "${materialToDelete.material_name || (materialToDelete as any).material_name}" has been deleted successfully.`);
         setConfirmDeleteOpen(false);
-        setBrandToDelete(null);
-        fetchBrand();
+        setMaterialToDelete(null);
+        fetchMaterial();
       } else {
         toast.error(res.message || 'Deletion constraint rejected by server.');
       }
@@ -102,13 +102,13 @@ export const useBrand = () => {
   // HOOK EMBEDDED ACTION & COLUMNS COUPLING
   // ==========================================
   const columns = useMemo(() => 
-    getBrandTableColumns({
+    getMaterialTableColumns({
       onEdit: (row) => {
-        setSelectedBrand(row);
+        setSelectedMaterial(row);
         setFormModalOpen(true);
       },
       onDelete: (row) => {
-        setBrandToDelete(row);
+        setMaterialToDelete(row);
         setConfirmDeleteOpen(true);
       },
     }),
@@ -116,7 +116,7 @@ export const useBrand = () => {
   );
 
   return {
-    brand,
+    Material,
     totalItems,
     isLoading,
     isDeleting,
@@ -124,12 +124,12 @@ export const useBrand = () => {
     columns, // Passed clean to the UI layer
     formModalOpen,
     setFormModalOpen,
-    selectedBrand,
-    setSelectedBrand,
+    selectedMaterial,
+    setSelectedMaterial,
     confirmDeleteOpen,
     setConfirmDeleteOpen,
-    brandToDelete,
-    fetchBrand,
+    materialToDelete,
+    fetchMaterial,
     handleExecuteDelete,
   };
 };
