@@ -8,7 +8,7 @@ export const useMaterial = () => {
   const { accessToken, isLoading: isAuthLoading } = useAuth();
 
   // Core Reactive States
-  const [Material, setMaterial] = useState<Material[]>([]);
+  const [material, setMaterial] = useState<Material[]>([]);
   const [totalItems, setTotalItems] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -116,7 +116,7 @@ export const useMaterial = () => {
   );
 
   return {
-    Material,
+    material,
     totalItems,
     isLoading,
     isDeleting,

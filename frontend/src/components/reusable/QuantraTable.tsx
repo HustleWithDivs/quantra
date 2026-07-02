@@ -100,7 +100,7 @@ export function QuantraTable<T>({
                   <span className="text-muted small">Syncing live database channels...</span>
                 </td>
               </tr>
-            ) : data.length === 0 ? (
+            ) : (data?.length ?? 0) === 0 ? (
               <tr>
                 <td colSpan={columns.length} className="text-center py-5 text-muted small">
                   No records match current filtration profiles.

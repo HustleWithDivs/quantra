@@ -76,28 +76,113 @@ export const getBrandTableColumns = ({ onEdit, onDelete }: BrandColumnsConfig): 
  * Supplier
  */
 export const getSupplierTableColumns = ({ onEdit, onDelete }: SupplierColumnsConfig): TableColumn<Supplier>[] => [
+ 
   {
-    key: 'supplier_code',
-    header: 'Supplier Code',
-    sortable: true,
-    render: (row) => <span className="fw-semibold text-primary">{row.supplier_code || ''}</span>,
-  },
-  {
-    key: 'supplier_name',
-    header: 'Supplier Name',
-    sortable: false,
-    render: (row) => <span className="text-secondary small">{row.supplier_name || ''}</span>,
-  },
-  {
-    key: 'is_active',
-    header: 'Status',
-    sortable: true,
-    render: (row) => (
-      <span className={`badge px-2 py-1 rounded-pill ${row.is_active ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'}`}>
-        {row.is_active ? 'Active' : 'Disabled'}
-      </span>
-    ),
-  },
+  key: 'supplier_code',
+  header: 'Supplier Code',
+  sortable: true,
+  render: (row) => (
+    <span className="fw-semibold text-primary">
+      {row.supplier_code || ''}
+    </span>
+  ),
+},
+{
+  key: 'supplier_name',
+  header: 'Supplier Name',
+  sortable: true,
+  render: (row) => (
+    <span className="text-secondary">
+      {row.supplier_name || ''}
+    </span>
+  ),
+},
+{
+  key: 'contact_person',
+  header: 'Contact Person',
+  sortable: true,
+  render: (row) => (
+    <span>{row.contact_person || '-'}</span>
+  ),
+},
+{
+  key: 'email',
+  header: 'Email',
+  sortable: true,
+  render: (row) => (
+    <span className="text-muted small">
+      {row.email || '-'}
+    </span>
+  ),
+},
+{
+  key: 'phone',
+  header: 'Phone',
+  sortable: false,
+  render: (row) => (
+    <span>{row.phone || '-'}</span>
+  ),
+},
+{
+  key: 'address',
+  header: 'Address',
+  sortable: false,
+  render: (row) => (
+    <span className="text-muted small">
+      {row.address || '-'}
+    </span>
+  ),
+},
+{
+  key: 'city',
+  header: 'City',
+  sortable: true,
+  render: (row) => (
+    <span>{row.city || '-'}</span>
+  ),
+},
+{
+  key: 'state',
+  header: 'State',
+  sortable: true,
+  render: (row) => (
+    <span>{row.state || '-'}</span>
+  ),
+},
+{
+  key: 'country_id',
+  header: 'Country',
+  sortable: true,
+  render: (row) => (
+    <span>{row.country_id ?? '-'}</span>
+  ),
+},
+{
+  key: 'gst_number',
+  header: 'GST Number',
+  sortable: true,
+  render: (row) => (
+    <span className="font-monospace">
+      {row.gst_number || '-'}
+    </span>
+  ),
+},
+{
+  key: 'is_active',
+  header: 'Status',
+  sortable: true,
+  render: (row) => (
+    <span
+      className={`badge px-2 py-1 rounded-pill ${
+        row.is_active
+          ? 'bg-success-subtle text-success'
+          : 'bg-danger-subtle text-danger'
+      }`}
+    >
+      {row.is_active ? 'Active' : 'Disabled'}
+    </span>
+  ),
+},
   {
     key: 'table_action_controls', 
     header: 'Actions',

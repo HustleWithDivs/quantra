@@ -8,7 +8,7 @@ export const useSupplier = () => {
   const { accessToken, isLoading: isAuthLoading } = useAuth();
 
   // Core Reactive States
-  const [Supplier, setSupplier] = useState<Supplier[]>([]);
+  const [supplier, setSupplier] = useState<Supplier[]>([]);
   const [totalItems, setTotalItems] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -116,7 +116,7 @@ export const useSupplier = () => {
   );
 
   return {
-    Supplier,
+    supplier,
     totalItems,
     isLoading,
     isDeleting,

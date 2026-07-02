@@ -29,7 +29,7 @@ def list_material(
     Get list of all materials.
     """
     try:
-        materials_db = MaterialService.get_all_materials(
+        materials_db = MaterialService.get_all_material(
             db=db, 
             limit=limit, 
             offset=offset,
