@@ -2,6 +2,7 @@ import { BiEditAlt, BiTrash } from 'react-icons/bi';
 import { type Brand } from '../api/brandApi';
 import { type Material } from '../api/materialApi';
 import { type Supplier } from '../api/supplierApi';
+import { type BusinessCategory } from '../api/businessCategoryApi';
 import { type TableColumn } from '../components/reusable/QuantraTable';
 import { QuantraButton } from '../components/reusable/QuantraButton';
 
@@ -19,6 +20,11 @@ interface SupplierColumnsConfig {
 interface MaterialColumnsConfig {
   onEdit: (role: Material) => void;
   onDelete: (role: Material) => void;
+}
+
+interface BusinessCategoryColumnsConfig {
+  onEdit: (role: BusinessCategory) => void;
+  onDelete: (role: BusinessCategory) => void;
 }
 
 /**
@@ -222,6 +228,56 @@ export const getMaterialTableColumns = ({ onEdit, onDelete }: MaterialColumnsCon
     header: 'Material Description',
     sortable: false,
     render: (row) => <span className="text-secondary small">{row.material_description || ''}</span>,
+  },
+  {
+    key: 'is_active',
+    header: 'Status',
+    sortable: true,
+    render: (row) => (
+      <span className={`badge px-2 py-1 rounded-pill ${row.is_active ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'}`}>
+        {row.is_active ? 'Active' : 'Disabled'}
+      </span>
+    ),
+  },
+  {
+    key: 'table_action_controls', 
+    header: 'Actions',
+    sortable: false,
+    render: (row) => (
+      <div className="d-flex gap-2">
+        <QuantraButton
+          variant="outline-secondary"
+          size="sm"
+          icon={<BiEditAlt />}
+          onClick={() => onEdit(row)}
+        />
+        <QuantraButton
+          variant="outline-danger"
+          size="sm"
+          icon={<BiTrash />}
+          onClick={() => onDelete(row)}
+        />
+      </div>
+    ),
+  },
+];
+
+/**
+ * Static schema factory generating columns definitions for the QuantraTable layout.
+ * business_category
+ */
+export const getBusinessCategoryTableColumns = ({ onEdit, onDelete }: BusinessCategoryColumnsConfig): TableColumn<BusinessCategory>[] => [
+  {
+    key: 'business_category_name',
+    header: 'BusinessCategory Name',
+    sortable: true,
+    render: (row) => <span className="fw-semibold text-primary">{row.business_category_name || ''}</span>,
+  },
+  {
+    key: 'material_description',
+    header: 'BusinessCategory Description',
+    sortable: false,
+    render: (row) => <span className="text-secondary small">{row.business_category_description || ''}</span>,
   },
   {
     key: 'is_active',
