@@ -8,6 +8,8 @@ import Sidebar from './Sidebar';
 // 1. Lazy load your components right here inside the layout module
 const Dashboard = lazy(() => import('../../pages/Dashboard'));
 const MasterData = lazy(() => import('../../pages/MasterData'));
+const ImportData = lazy(() => import('../../pages/import-data/BulkIngestionPage'));
+
 const ProductData = lazy(() => import('../../pages/product/ProductData'));
 // Injecting our brand new interactive Product Creator Wizard here
 const ProductWizardPage = lazy(() => import('../../pages/product/ProductWizardPage'));
@@ -55,6 +57,7 @@ const PageLayout=({theme,setTheme}) =>{
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/master-data" element={<MasterData />} />
                 <Route path="/product-data" element={<ProductData />} />
+                <Route path="/import-data" element={<ImportData/>} />
                 <Route path="/product-data/manage" element={<ProductWizardPage />} />
                 <Route path="/customer" element={<Customer />} />
                 <Route path="/user-management/users" element={<Users />} />

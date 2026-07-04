@@ -16,6 +16,7 @@ from app.api.v1.department import router as department_router
 from app.api.v1.category import router as category_router  
 from app.api.v1.sub_category import router as sub_category_router  
 from app.api.v1.product import router as product_router  
+from app.api.v1.bulk_ingestion import router as bulk_ingestion_router
 from fastapi.staticfiles import StaticFiles
 import os
 # Auto-generate database tables on startup
@@ -51,6 +52,7 @@ app.include_router(department_router,prefix="/api/v1")
 app.include_router(category_router,prefix="/api/v1")
 app.include_router(sub_category_router,prefix="/api/v1")
 app.include_router(product_router,prefix="/api/v1")
+app.include_router(bulk_ingestion_router, prefix=("/api/v1"))
 
 
 
