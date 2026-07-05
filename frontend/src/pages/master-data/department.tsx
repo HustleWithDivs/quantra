@@ -1,7 +1,7 @@
 import React from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import { BiPlus, BiShieldQuarter } from 'react-icons/bi';
-import { useDepartment } from '../../hooks/master-data/department';
+import { useDepartment } from '../../hooks/master-data/useDepartment';
 import { QuantraButton } from '../../components/reusable/QuantraButton';
 import { QuantraConfirmBox } from '../../components/reusable/QuantraConfirmBox';
 import { DepartmentFormModal } from '../../components/master-data/DepartmentFormModal';
