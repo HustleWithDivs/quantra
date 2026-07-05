@@ -7,18 +7,35 @@ export interface TargetDbField {
   key: string;
   label: string;
 }
-
 export const DB_PRODUCT_TARGET_FIELDS: TargetDbField[] = [
   { key: 'sku', label: 'SKU Identifier Code *' },
+  {key:'upc_ean', label:'UPC EAN'},
   { key: 'product_name', label: 'Product Display Name *' },
-  { key: 'cost_price', label: 'Cost Price *' },
-  { key: 'selling_price', label: 'Selling Retail Price *' },
-  { key: 'stock_qty', label: 'Initial Inventory Stock Qty *' },
+  { key: 'short_description', label: 'Product short description *' },
+  { key: 'long_description', label: 'Product long description *' },
+    //Structural Hierarchy Foreign Keys
   { key: 'business_category_name', label: 'Business Category Hierarchy Text *' },
   { key: 'department_name', label: 'Department Text *' },
   { key: 'category_name', label: 'Category Text *' },
   { key: 'sub_category_name', label: 'Sub-Category Text *' },
   { key: 'product_type', label: 'Product Type Segment *' },
+ // Attribute Mapping Keys
+ { key: 'brand_name', label: 'Brand Name *' },
+  { key: 'supplier_name', label: 'Supplier Name *' },
+  { key: 'material_name', label: 'Material Name *' },
+    // Pricing and Stock Attributes
+  { key: 'cost_price', label: 'Cost Price *' },
+  { key: 'selling_price', label: 'Selling Retail Price *' },
+  { key: 'stock_qty', label: 'Initial Inventory Stock Qty *' },
+  { key: 'barcode', label: 'Barcode *' },
+  { key: 'min_order_qty', label: 'Miniumum Order Qty *' },
+    //Logistics and Metadata
+  { key: 'weight', label: 'Weight *' },
+  { key: 'dimensions', label: 'Dimension of Package *' },
+  { key: 'is_active', label: 'Is Active *' },
+  { key: 'is_taxable', label: 'Is Taxable *' },
+  { key: 'is_perishable', label: 'Is Perishable *' },
+  { key: 'expiry_date', label: 'Expiry Date *' },
   { key: 'uom', label: 'Unit of Measurement (UOM)' }
 ];
 
@@ -36,12 +53,17 @@ export const useBulkIngestionForm = () => {
   const handleFileAnalysis = async (selectedFile: File) => {
     setFile(selectedFile);
     setIsAnalyzing(true);
-    
+    console.log(selectedFile)
     const formData = new FormData();
     formData.append('file', selectedFile);
 
     try {
-      const res = await api.post('/ingestion/analyze-file', formData);
+      const res = await api.post('/ingestion/analyze-file', formData,{
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+      console.log(formData)
       if (res.data?.requestStatus) {
         setHeaders(res.data.data.headers);
         // Map LangChain suggestions down into the local view configuration matrices
@@ -82,7 +104,11 @@ export const useBulkIngestionForm = () => {
     formData.append('column_mapping_json', JSON.stringify(currentMapping));
 
     try {
-      const res = await api.post('/ingestion/execute-bulk-upload', formData);
+      const res = await api.post('/ingestion/execute-bulk-upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
       if (res.data?.requestStatus) {
         toast.success(res.data.message || 'Background worker process successfully kicked off.');
         // Clean up staged view components on clean background thread handoffs

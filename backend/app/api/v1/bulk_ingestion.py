@@ -35,10 +35,10 @@ async def analyze_uploaded_file_headers(file: UploadFile = File(...)):
 
 @router.post("/execute-bulk-upload")
 async def execute_bulk_upload(
-    background_tasks: BackgroundTasks,
-    file: UploadFile = File(...),
-    column_mapping_json: str = Form(...), # Serialized JSON map string payload from user adjustments UI
-    db: Session = Depends(get_db)
+   file: UploadFile = File(...),
+    column_mapping_json: str = Form(...), # Explicitly parsed from multi-part data
+    background_tasks: BackgroundTasks = BackgroundTasks(), # Framework injected
+    db: Session = Depends(get_db) # Framework injected
 ):
     """
     Accepts full catalog file loads and fires off scalable thread execution routines.
