@@ -4,8 +4,8 @@ from fastapi import HTTPException, status
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
-from app.models.product_type_model import ProductType, SubCategoryProductType
-from app.models.sub_category_model import SubCategory
+from app.models.product_type_model import ProductType
+from app.models.sub_category_model import SubCategory, SubCategoryProductType
 from app.schemas.product_type_schema import ProductTypeCreate, ProductTypeUpdate
 
 
