@@ -16,6 +16,7 @@ from app.api.v1.department import router as department_router
 from app.api.v1.category import router as category_router  
 from app.api.v1.sub_category import router as sub_category_router  
 from app.api.v1.product_type import router as product_type_router
+from app.api.v1.material import router as material 
 from app.api.v1.product import router as product_router  
 from fastapi.staticfiles import StaticFiles
 import os
@@ -51,8 +52,10 @@ app.include_router(business_category_router, prefix="/api/v1")
 app.include_router(department_router,prefix="/api/v1")
 app.include_router(category_router,prefix="/api/v1")
 app.include_router(sub_category_router,prefix="/api/v1")
-app.include_router(product_router,prefix="/api/v1")
 app.include_router(product_type_router, prefix="/api/v1")
+
+app.include_router(material,prefix="/api/v1")
+app.include_router(product_router,prefix="/api/v1")
 
 
 

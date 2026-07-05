@@ -29,7 +29,7 @@ def list_supplier(
     Get list of all suppliers.
     """
     try:
-        suppliers_db = SupplierService.get_all_supplier(
+        suppliers_db = SupplierService.get_all_suppliers(
             db=db, 
             limit=limit, 
             offset=offset,
