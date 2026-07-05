@@ -3,6 +3,7 @@ import { type Brand } from '../api/brandApi';
 import { type Material } from '../api/materialApi';
 import { type Supplier } from '../api/supplierApi';
 import { type BusinessCategory } from '../api/businessCategoryApi';
+import { type Department } from '../api/departmentApi';
 import { type TableColumn } from '../components/reusable/QuantraTable';
 import { QuantraButton } from '../components/reusable/QuantraButton';
 
@@ -25,6 +26,11 @@ interface MaterialColumnsConfig {
 interface BusinessCategoryColumnsConfig {
   onEdit: (role: BusinessCategory) => void;
   onDelete: (role: BusinessCategory) => void;
+}
+
+interface DepartmentColumnsConfig {
+  onEdit: (role: Department) => void;
+  onDelete: (role: Department) => void;
 }
 
 /**
@@ -278,6 +284,56 @@ export const getBusinessCategoryTableColumns = ({ onEdit, onDelete }: BusinessCa
     header: 'BusinessCategory Description',
     sortable: false,
     render: (row) => <span className="text-secondary small">{row.business_category_description || ''}</span>,
+  },
+  {
+    key: 'is_active',
+    header: 'Status',
+    sortable: true,
+    render: (row) => (
+      <span className={`badge px-2 py-1 rounded-pill ${row.is_active ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'}`}>
+        {row.is_active ? 'Active' : 'Disabled'}
+      </span>
+    ),
+  },
+  {
+    key: 'table_action_controls', 
+    header: 'Actions',
+    sortable: false,
+    render: (row) => (
+      <div className="d-flex gap-2">
+        <QuantraButton
+          variant="outline-secondary"
+          size="sm"
+          icon={<BiEditAlt />}
+          onClick={() => onEdit(row)}
+        />
+        <QuantraButton
+          variant="outline-danger"
+          size="sm"
+          icon={<BiTrash />}
+          onClick={() => onDelete(row)}
+        />
+      </div>
+    ),
+  },
+];
+
+/**
+ * Static schema factory generating columns definitions for the QuantraTable layout.
+ * Department
+ */
+export const getDepartmentTableColumns = ({ onEdit, onDelete }: DepartmentColumnsConfig): TableColumn<Department>[] => [
+  {
+    key: 'department_name',
+    header: 'Name',
+    sortable: true,
+    render: (row) => <span className="fw-semibold text-primary">{row.department_name || ''}</span>,
+  },
+  {
+    key: 'department_description',
+    header: 'Description',
+    sortable: false,
+    render: (row) => <span className="text-secondary small">{row.department_description || ''}</span>,
   },
   {
     key: 'is_active',

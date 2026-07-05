@@ -11,6 +11,7 @@ const Brand = lazy(() => import('../../pages/master-data/brand'));
 const Supplier = lazy(() => import('../../pages/master-data/supplier'));
 const Material = lazy(() => import('../../pages/master-data/material'));
 const BusinessCategory = lazy(() => import('../../pages/master-data/business-category'));
+const Department = lazy(() => import('../../pages/master-data/department'));
 const ProductData = lazy(() => import('../../pages/ProductData'));
 // Injecting our brand new interactive Product Creator Wizard here
 const ProductWizardPage = lazy(() => import('../../pages/product/ProductWizardPage'));
@@ -60,6 +61,7 @@ const PageLayout=({theme,setTheme}) =>{
                 <Route path="/master-data/supplier" element={<Supplier />} />
                 <Route path="/master-data/material" element={<Material />} />
                 <Route path="/master-data/business-category" element={<BusinessCategory />} />
+                <Route path="/master-data/Department" element={<Department />} />
                 <Route path="/product-data" element={<ProductData />} />
                 <Route path="/product-data/manage" element={<ProductWizardPage />} />
                 <Route path="/customer" element={<Customer />} />
