@@ -12,7 +12,7 @@ const Supplier = lazy(() => import('../../pages/master-data/supplier'));
 const Material = lazy(() => import('../../pages/master-data/material'));
 const BusinessCategory = lazy(() => import('../../pages/master-data/business-category'));
 const Department = lazy(() => import('../../pages/master-data/department'));
-const ProductData = lazy(() => import('../../pages/ProductData'));
+const ProductData = lazy(() => import('../../pages/product/ProductData'));
 // Injecting our brand new interactive Product Creator Wizard here
 const ProductWizardPage = lazy(() => import('../../pages/product/ProductWizardPage'));
 const Customer = lazy(() => import('../../pages/Customer'));
