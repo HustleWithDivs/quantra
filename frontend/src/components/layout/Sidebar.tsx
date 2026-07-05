@@ -115,6 +115,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isExpanded }) => {
                       <FaShieldAlt className="fs-5 flex-shrink-0 me-2" />
                       <span>Material</span>
                     </Nav.Link>
+                    <Nav.Link as={Link} to="/master-data/business-category" className={getSubNavLinkClass('/master-data/business-category')}>
+                      <FaShieldAlt className="fs-5 flex-shrink-0 me-2" />
+                      <span>Business Category</span>
+                    </Nav.Link>
+                    <Nav.Link as={Link} to="/master-data/department" className={getSubNavLinkClass('/master-data/department')}>
+                      <FaShieldAlt className="fs-5 flex-shrink-0 me-2" />
+                      <span>Department</span>
+                    </Nav.Link>
                   </div>
                 </div>
               </Collapse>
@@ -166,7 +174,27 @@ export const Sidebar: React.FC<SidebarProps> = ({ isExpanded }) => {
                 >
                   <FaShieldAlt className="fs-5 me-2 flex-shrink-0" />
                   <span>Material</span>
-                </Dropdown.Item>                
+                </Dropdown.Item>   
+                <Dropdown.Item 
+                  as={Link} 
+                  to="/master-data/business-category" 
+                  className={`rounded d-flex align-items-center px-3 py-2 ${
+                    location.pathname === '/master-data/business-category' ? 'bg-primary text-white' : 'text-body'
+                  }`}
+                >
+                  <FaShieldAlt className="fs-5 me-2 flex-shrink-0" />
+                  <span>Business Category</span>
+                </Dropdown.Item>
+                 <Dropdown.Item 
+                  as={Link} 
+                  to="/master-data/department" 
+                  className={`rounded d-flex align-items-center px-3 py-2 ${
+                    location.pathname === '/master-data/department' ? 'bg-primary text-white' : 'text-body'
+                  }`}
+                >
+                  <FaShieldAlt className="fs-5 me-2 flex-shrink-0" />
+                  <span>Department</span>
+                </Dropdown.Item>              
               </Dropdown.Menu>
             </Dropdown>
           )}
