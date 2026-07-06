@@ -6,6 +6,7 @@ import { type BusinessCategory } from '../api/businessCategoryApi';
 import { type Department } from '../api/departmentApi';
 import { type Category } from '../api/categoryApi';
 import { type SubCategory } from '../api/subCategoryApi';
+import { type ProductType } from '../api/productTypeApi';
 import { type TableColumn } from '../components/reusable/QuantraTable';
 import { QuantraButton } from '../components/reusable/QuantraButton';
 
@@ -43,6 +44,11 @@ interface CategoryColumnsConfig {
 interface SubCategoryColumnsConfig {
   onEdit: (role: SubCategory) => void;
   onDelete: (role: SubCategory) => void;
+}
+
+interface ProductTypeColumnsConfig {
+  onEdit: (role: ProductType) => void;
+  onDelete: (role: ProductType) => void;
 }
 
 /**
@@ -433,7 +439,7 @@ export const getCategoryTableColumns = ({ onEdit, onDelete }: CategoryColumnsCon
 
 /**
  * Static schema factory generating columns definitions for the QuantraTable layout.
- * Department
+ * Sub Category
  */
 export const getSubCategoryTableColumns = ({ onEdit, onDelete }: SubCategoryColumnsConfig): TableColumn<SubCategory>[] => [
   {
@@ -447,6 +453,56 @@ export const getSubCategoryTableColumns = ({ onEdit, onDelete }: SubCategoryColu
     header: 'Description',
     sortable: false,
     render: (row) => <span className="text-secondary small">{row.sub_category_description || ''}</span>,
+  },
+  {
+    key: 'is_active',
+    header: 'Status',
+    sortable: true,
+    render: (row) => (
+      <span className={`badge px-2 py-1 rounded-pill ${row.is_active ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'}`}>
+        {row.is_active ? 'Active' : 'Disabled'}
+      </span>
+    ),
+  },
+  {
+    key: 'table_action_controls', 
+    header: 'Actions',
+    sortable: false,
+    render: (row) => (
+      <div className="d-flex gap-2">
+        <QuantraButton
+          variant="outline-secondary"
+          size="sm"
+          icon={<BiEditAlt />}
+          onClick={() => onEdit(row)}
+        />
+        <QuantraButton
+          variant="outline-danger"
+          size="sm"
+          icon={<BiTrash />}
+          onClick={() => onDelete(row)}
+        />
+      </div>
+    ),
+  },
+];
+
+/**
+ * Static schema factory generating columns definitions for the QuantraTable layout.
+ * Product Type
+ */
+export const getProductTypeTableColumns = ({ onEdit, onDelete }: ProductTypeColumnsConfig): TableColumn<ProductType>[] => [
+  {
+    key: 'product_type',
+    header: 'Name',
+    sortable: true,
+    render: (row) => <span className="fw-semibold text-primary">{row.product_type || ''}</span>,
+  },
+  {
+    key: 'product_type_description',
+    header: 'Description',
+    sortable: false,
+    render: (row) => <span className="text-secondary small">{row.product_type_description || ''}</span>,
   },
   {
     key: 'is_active',
