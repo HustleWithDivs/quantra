@@ -123,6 +123,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ isExpanded }) => {
                       <FaShieldAlt className="fs-5 flex-shrink-0 me-2" />
                       <span>Department</span>
                     </Nav.Link>
+                    <Nav.Link as={Link} to="/master-data/category" className={getSubNavLinkClass('/master-data/category')}>
+                      <FaShieldAlt className="fs-5 flex-shrink-0 me-2" />
+                      <span>Category</span>
+                    </Nav.Link>
+                    <Nav.Link as={Link} to="/master-data/sub-category" className={getSubNavLinkClass('/master-data/sub-category')}>
+                      <FaShieldAlt className="fs-5 flex-shrink-0 me-2" />
+                      <span>Sub Category</span>
+                    </Nav.Link>
+                    <Nav.Link as={Link} to="/master-data/product-type" className={getSubNavLinkClass('/master-data/product-type')}>
+                      <FaShieldAlt className="fs-5 flex-shrink-0 me-2" />
+                      <span>Product Type</span>
+                    </Nav.Link>
                   </div>
                 </div>
               </Collapse>
@@ -194,7 +206,37 @@ export const Sidebar: React.FC<SidebarProps> = ({ isExpanded }) => {
                 >
                   <FaShieldAlt className="fs-5 me-2 flex-shrink-0" />
                   <span>Department</span>
-                </Dropdown.Item>              
+                </Dropdown.Item>  
+                <Dropdown.Item 
+                  as={Link} 
+                  to="/master-data/category" 
+                  className={`rounded d-flex align-items-center px-3 py-2 ${
+                    location.pathname === '/master-data/category' ? 'bg-primary text-white' : 'text-body'
+                  }`}
+                >
+                  <FaShieldAlt className="fs-5 me-2 flex-shrink-0" />
+                  <span>Category</span>
+                </Dropdown.Item>
+                <Dropdown.Item 
+                  as={Link} 
+                  to="/master-data/sub-category" 
+                  className={`rounded d-flex align-items-center px-3 py-2 ${
+                    location.pathname === '/master-data/sub-category' ? 'bg-primary text-white' : 'text-body'
+                  }`}
+                >
+                  <FaShieldAlt className="fs-5 me-2 flex-shrink-0" />
+                  <span>Sub-Category</span>
+                </Dropdown.Item> 
+                 <Dropdown.Item 
+                  as={Link} 
+                  to="/master-data/product-type" 
+                  className={`rounded d-flex align-items-center px-3 py-2 ${
+                    location.pathname === '/master-data/product-type' ? 'bg-primary text-white' : 'text-body'
+                  }`}
+                >
+                  <FaShieldAlt className="fs-5 me-2 flex-shrink-0" />
+                  <span>Product-Type</span>
+                </Dropdown.Item>           
               </Dropdown.Menu>
             </Dropdown>
           )}

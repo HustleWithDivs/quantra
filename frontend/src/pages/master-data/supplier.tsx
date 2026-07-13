@@ -1,7 +1,7 @@
 import React from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import { BiPlus, BiShieldQuarter } from 'react-icons/bi';
-import { useSupplier } from '../../hooks/master-data/supplier';
+import { useSupplier } from '../../hooks/master-data/useSupplier';
 import { QuantraButton } from '../../components/reusable/QuantraButton';
 import { QuantraConfirmBox } from '../../components/reusable/QuantraConfirmBox';
 import { SupplierFormModal } from '../../components/master-data/SupplierFormModal';

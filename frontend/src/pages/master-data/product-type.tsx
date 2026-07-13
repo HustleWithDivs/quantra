@@ -1,15 +1,15 @@
 import React from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import { BiPlus, BiShieldQuarter } from 'react-icons/bi';
-import { useBusinessCategory } from '../../hooks/master-data/useBusinessCategory';
+import { useProductType } from '../../hooks/master-data/useProductType';
 import { QuantraButton } from '../../components/reusable/QuantraButton';
 import { QuantraConfirmBox } from '../../components/reusable/QuantraConfirmBox';
-import { BusinessCategoryFormModal } from '../../components/master-data/BusinessCategoryFormModal';
+import { ProductTypeFormModal } from '../../components/master-data/ProductTypeFormModal';
 import { QuantraTable } from '../../components/reusable/QuantraTable';
 
-const BusinessCategory: React.FC = () => {
+const ProductType: React.FC = () => {
   const {
-    business_category,
+    product_type,
     totalItems,
     isLoading,
     isDeleting,
@@ -17,14 +17,14 @@ const BusinessCategory: React.FC = () => {
     columns, // Injected with handlers baked in directly by the hook wrapper
     formModalOpen,
     setFormModalOpen,
-    selectedBusinessCategory,
-    setSelectedBusinessCategory,
+    selectedProductType,
+    setSelectedProductType,
     confirmDeleteOpen,
     setConfirmDeleteOpen,
-    business_categoryToDelete,
-    fetchBusinessCategory,
+    productTypeToDelete,
+    fetchProductType,
     handleExecuteDelete,
-  } = useBusinessCategory();
+  } = useProductType();
 
   return (
     <Container fluid className="py-4 px-4">
@@ -33,7 +33,7 @@ const BusinessCategory: React.FC = () => {
         <Col>
           <div className="d-flex align-items-center gap-2">
             <BiShieldQuarter className="fs-3 text-primary" />
-            <h4 className="mb-0 fw-bold">BusinessCategory Configurations</h4>
+            <h4 className="mb-0 fw-bold">ProductType Configurations</h4>
           </div>
         </Col>
         <Col xs="auto">
@@ -41,10 +41,10 @@ const BusinessCategory: React.FC = () => {
             variant="primary" 
             icon={<BiPlus className="fs-5" />} 
             onClick={() => {
-              setSelectedBusinessCategory(null);
+              setSelectedProductType(null);
               setFormModalOpen(true);
             }}
-            text="Create Business Category"
+            text="Create ProductType"
           />
         </Col>
       </Row>
@@ -52,27 +52,27 @@ const BusinessCategory: React.FC = () => {
       {/* Reusable Data Table abstraction rendering */}
       <QuantraTable
         columns={columns}
-        data={business_category}
+        data={product_type}
         isLoading={isLoading}
         totalItems={totalItems}
-        searchPlaceholder="Search  BusinessCategory..."
+        searchPlaceholder="Search  Product Type..."
         tableController={tableController}
       />
 
       {/* Conditional Overlays Section */}
             {formModalOpen && (
-              <BusinessCategoryFormModal
+              <ProductTypeFormModal
                 show={formModalOpen}
                 onClose={() => setFormModalOpen(false)}
-                onSave={fetchBusinessCategory}
-                editingBusinessCategory={selectedBusinessCategory}
+                onSave={fetchProductType}
+                editingProductType={selectedProductType}
               />
             )}
 
       <QuantraConfirmBox
         show={confirmDeleteOpen}
-        title={`Delete BusinessCategory: "${business_categoryToDelete?.business_category_name}"`}
-        message={`Are you completely sure you want to delete the business_category "${business_categoryToDelete?.business_category_name}"? All users bound to this credential group layout will lose authorization.`}
+        title={`Delete ProductType: "${productTypeToDelete?.product_type}"`}
+        message={`Are you completely sure you want to delete the product_type "${productTypeToDelete?.product_type}"? All users bound to this credential group layout will lose authorization.`}
         confirmText="Confirm"
         confirmVariant="danger"
         isLoading={isDeleting}
@@ -82,4 +82,4 @@ const BusinessCategory: React.FC = () => {
     </Container>
   );
 };
-export default BusinessCategory
+export default ProductType
