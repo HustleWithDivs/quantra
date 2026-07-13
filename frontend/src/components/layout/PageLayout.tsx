@@ -7,7 +7,8 @@ import Sidebar from './Sidebar';
 
 // 1. Lazy load your components right here inside the layout module
 const Dashboard = lazy(() => import('../../pages/Dashboard'));
-const ImportData = lazy(() => import('../../pages/import-data/BulkIngestionPage'));
+const BulkImportData = lazy(() => import('../../pages/import-data/BulkIngestionPage'));
+const ImportData = lazy(() => import('../../pages/import-data/MappingListPage'));
 
 const Brand = lazy(() => import('../../pages/master-data/brand'));
 const Supplier = lazy(() => import('../../pages/master-data/supplier'));
@@ -18,8 +19,8 @@ const ProductData = lazy(() => import('../../pages/product/ProductData'));
 const Category = lazy(() => import('../../pages/master-data/category'));
 const SubCategory = lazy(() => import('../../pages/master-data/sub-category'));
 const ProductType = lazy(() => import('../../pages/master-data/product-type'));
-// Injecting our brand new interactive Product Creator Wizard here
 const ProductWizardPage = lazy(() => import('../../pages/product/ProductWizardPage'));
+
 const Customer = lazy(() => import('../../pages/Customer'));
 const Users = lazy(() => import('../../pages/user-management/Users'));
 const Roles = lazy(() => import('../../pages/user-management/Roles'));
@@ -71,6 +72,7 @@ const PageLayout=({theme,setTheme}) =>{
                 <Route path="/master-data/sub-category" element={<SubCategory />} />
                 <Route path="/master-data/product-type" element={<ProductType />} />
                 <Route path="/product-data" element={<ProductData />} />
+                <Route path="/bulk-import" element={<BulkImportData/>}/>
                 <Route path="/import-data" element={<ImportData/>} />
                 <Route path="/product-data/manage" element={<ProductWizardPage />} />
                 <Route path="/customer" element={<Customer />} />

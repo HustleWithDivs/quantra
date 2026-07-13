@@ -3,7 +3,7 @@ import { Modal, Form, Button } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { productApi, type ProductVariant } from '../../api/productApi';
 import { api } from '../../api/axiosInstance';
-import { QuantraSelectField } from '../../components/reusable/QuantraSelectField';
+import { QuantraSelectField } from '../reusable/QuantraSelectField';
 import { useForm } from 'react-hook-form';
 
 interface VariantModalProps {
