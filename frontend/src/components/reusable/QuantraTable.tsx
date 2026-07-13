@@ -27,6 +27,7 @@ interface QuantraTableProps<T> {
     handleSortChange: (key: string) => void;
     handlePageChange: (pageNumber: number) => void;
   };
+  renderExpandedRow?: (row: T) => React.ReactNode;
 }
 
 export function QuantraTable<T>({
@@ -36,6 +37,7 @@ export function QuantraTable<T>({
   totalItems,
   searchPlaceholder = "Search operational logs...",
   tableController,
+  renderExpandedRow,
 }: QuantraTableProps<T>) {
   const {
     currentPage,
@@ -108,13 +110,16 @@ export function QuantraTable<T>({
               </tr>
             ) : (
               data.map((row, rowIndex) => (
-                <tr key={rowIndex}>
-                  {columns.map((col, colIndex) => (
-                    <td key={colIndex} className="py-3 px-4 text-body">
-                      {col.render ? col.render(row) : (row[col.key as keyof T] as unknown as React.ReactNode)}
-                    </td>
-                  ))}
-                </tr>
+                <React.Fragment key={rowIndex}>
+                  <tr>
+                    {columns.map((col, colIndex) => (
+                      <td key={colIndex} className="py-3 px-4 text-body">
+                        {col.render ? col.render(row) : (row[col.key as keyof T] as unknown as React.ReactNode)}
+                      </td>
+                    ))}
+                  </tr>
+                  {renderExpandedRow && renderExpandedRow(row)}
+                </React.Fragment>
               ))
             )}
           </tbody>

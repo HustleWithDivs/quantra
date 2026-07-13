@@ -1,14 +1,58 @@
+import json
 from uuid import UUID
 from datetime import datetime
 from typing import List, Optional
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class ProductVariantBase(BaseModel):
     color_id: Optional[UUID] = None
     size_id: Optional[UUID] = None
-    product_images: List[str] = Field(default_factory=list) # Holds local file paths (e.g., "/static/uploads/products/xyz.jpg")
+    product_images: List[str] = Field(default_factory=list) # Holds local file paths
 
+    color_name: Optional[str] = "Default Color"
+    color_description: Optional[str] = ""
+    size_name: Optional[str] = "Standard Size"
+    size_description: Optional[str] = ""
+
+    @model_validator(mode='before')
+    @classmethod
+    def populate_relational_details(cls, data):
+        if isinstance(data, dict):
+            return data
+        
+        # Safely extract preloaded relationship models
+        color_obj = getattr(data, 'color', None)
+        size_obj = getattr(data, 'size', None)
+        
+        # Construct a dictionary to feed into the Pydantic model fields
+        resolved_data = {
+            "color_id": getattr(data, "color_id", None),
+            "size_id": getattr(data, "size_id", None),
+            "product_images": getattr(data, "product_images", []),
+            "color_name": color_obj.color_name if color_obj else "Default Color",
+            "color_description": getattr(color_obj, "color_description", ""),
+            "size_name": size_obj.size_name if size_obj else "Standard Size",
+            "size_description": getattr(size_obj, "size_description", ""),
+        }
+        
+        # Preserve primary/foreign keys when validating sub-classes like ProductVariantRead
+        if hasattr(data, "product_variant_id"):
+            resolved_data["product_variant_id"] = data.product_variant_id
+        if hasattr(data, "product_id"):
+            resolved_data["product_id"] = data.product_id
+            
+        return resolved_data
+
+    @field_validator('product_images', mode='before')
+    @classmethod
+    def parse_json_images(cls, value):
+        if isinstance(value, str):
+            try:
+                return json.loads(value)
+            except Exception:
+                return [value]
+        return value or []
 class ProductVariantCreate(ProductVariantBase):
     pass
 
@@ -19,7 +63,12 @@ class ProductVariantUpdate(BaseModel):
 class ProductVariantRead(ProductVariantBase):
     product_variant_id: UUID
     product_id: UUID
-    model_config = ConfigDict(from_attributes=True)
+    
+    # Block any implicit relational loop traversing up to the parent model
+    model_config = ConfigDict(
+        from_attributes=True,
+        ignored_types=(object,) # Prevents cyclic property exploration loops
+    )
 
 
 class ProductBase(BaseModel):
@@ -87,4 +136,5 @@ class ProductResponseData(ProductBase):
     created_by: Optional[UUID] = None
     modified_by: Optional[UUID] = None
     variants: List[ProductVariantRead] = []
+    
     model_config = ConfigDict(from_attributes=True)

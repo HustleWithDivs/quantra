@@ -1,5 +1,5 @@
 from typing import Generic, TypeVar, Union, Any, List
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 T = TypeVar('T')
 
@@ -8,7 +8,7 @@ class APIResponse(BaseModel, Generic[T]):
     message: str
     data: Union[T, List[T], dict, List[Any]] = []
     requestStatus: bool
-
+    model_config = ConfigDict(from_attributes=True)
     @classmethod
     def success(cls, message: str = "Operation successful", data: Any = None, code: int = 200):
         """Helper method to return a successful standardized envelope"""

@@ -191,6 +191,7 @@ export const ProductWizardPage: React.FC = () => {
                   {/* --- TAB 3: VISUALS & VARIANTS --- */}
                   <Tab 
                     eventKey="variants" 
+                    disabled={isEditMode}
                     title={
                       <div className="d-flex align-items-center gap-2 py-2 fw-semibold">
                         <BiGitBranch className="fs-5 text-warning" /> 3. Variant Configuration & Product Images
