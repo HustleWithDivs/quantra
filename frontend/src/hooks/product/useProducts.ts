@@ -11,7 +11,9 @@ export const useProducts = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
-
+  const [variantModalOpen, setVariantModalOpen] = useState<boolean>(false);
+  const [activeParentProductId, setActiveParentProductId] = useState<string>('');
+  const [selectedVariantContext, setSelectedVariantContext] = useState<ProductVariant | null>(null);
   // Expander Trackers
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
 
@@ -79,7 +81,17 @@ export const useProducts = () => {
       isExpanded: (row) => !!expandedRows[row.product_id]
     }), [expandedRows, navigate]
   );
+const openCreateVariantModal = (productId: string) => {
+    setActiveParentProductId(productId);
+    setSelectedVariantContext(null);
+    setVariantModalOpen(true);
+  };
 
+  const openEditVariantModal = (productId: string, variant: ProductVariant) => {
+    setActiveParentProductId(productId);
+    setSelectedVariantContext(variant);
+    setVariantModalOpen(true);
+  };
   return {
     products,
     totalItems,
@@ -99,6 +111,12 @@ export const useProducts = () => {
     expandedRows,
     toggleRowExpansion,
     handleExecuteVariantDelete,
-    navigateToAddWizard: () => navigate('/product-data/manage')
+    navigateToAddWizard: () => navigate('/product-data/manage'),
+    variantModalOpen,
+    setVariantModalOpen,
+    activeParentProductId,
+    selectedVariantContext,
+    openCreateVariantModal,
+    openEditVariantModal
   };
 };

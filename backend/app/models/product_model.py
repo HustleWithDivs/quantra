@@ -69,9 +69,12 @@ class ProductVariant(Base):
 
     product_variant_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
     product_id = Column(UUID(as_uuid=True), ForeignKey("product.product_id", ondelete="CASCADE"), nullable=False)
-    color_id = Column(UUID(as_uuid=True), nullable=True)
-    size_id = Column(UUID(as_uuid=True), nullable=True)
+    color_id = Column(UUID(as_uuid=True), ForeignKey("color.color_id", ondelete="SET NULL"), nullable=True)
+    size_id = Column(UUID(as_uuid=True), ForeignKey("size.size_id", ondelete="SET NULL"), nullable=True)
     product_images = Column(JSON, default=list, nullable=True) # Array list of image URL strings
 
     # Relationship back to parent product
     product = relationship("Product", back_populates="variants")
+    color = relationship("Color", foreign_keys=[color_id])
+    size = relationship("Size", foreign_keys=[size_id])
+    

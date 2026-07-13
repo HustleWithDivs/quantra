@@ -111,6 +111,32 @@ export const productApi = {
     return response.data;
   },
 
+  createVariant: async (productId: string, variantData: { color_id?: string; size_id?: string; image_files?: File[] }): Promise<APIResponse<Product>> => {
+    const formData = new FormData();
+    if (variantData.color_id) formData.append('color_id', variantData.color_id);
+    if (variantData.size_id) formData.append('size_id', variantData.size_id);
+    if (variantData.image_files) {
+      variantData.image_files.forEach(file => formData.append('image_files', file));
+    }
+    const response = await api.post(`/products/${productId}/variants`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+
+  updateVariant: async (variantId: string, variantData: { color_id?: string; size_id?: string; image_files?: File[] }): Promise<APIResponse<Product>> => {
+    const formData = new FormData();
+    if (variantData.color_id) formData.append('color_id', variantData.color_id);
+    if (variantData.size_id) formData.append('size_id', variantData.size_id);
+    if (variantData.image_files) {
+      variantData.image_files.forEach(file => formData.append('image_files', file));
+    }
+    const response = await api.put(`/products/variants/${variantId}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data;
+  },
+
   deleteVariant: async (variantId: string): Promise<APIResponse<Record<string, any>>> => {
     const response = await api.delete(`/products/variants/${variantId}`);
     return response.data;

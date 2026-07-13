@@ -80,6 +80,12 @@ export const useProductForm = () => {
   const watchSubCategory = watch('sub_category_id');
 
   useEffect(() => {
+  if (isEditMode && activeTab === 'variants') {
+    setActiveTab('core');
+    toast.info("Individual variant entries must be modified via the Product Catalog Matrix accordion view.");
+  }
+}, [activeTab, isEditMode]);
+  useEffect(() => {
     const loadStaticLookups = async () => {
       try {
         const [resBC, resBrands, resSuppliers, resMaterials, resColors, resSizes] = await Promise.all([
@@ -96,7 +102,7 @@ export const useProductForm = () => {
         setSuppliers(resSuppliers.data.data.map((s: any) => ({ value: s.supplier_id, label: s.supplier_name })));
         setMaterials(resMaterials.data.data.map((m: any) => ({ value: m.material_id, label: m.material_name })));
         setColors(resColors.data.data.map((c: any) => ({ value: c.color_id, label: c.color_name })));
-        setSizes(resSizes.data.data.map((s: any) => ({ value: s.size_id, label: s.size_value })));
+        setSizes(resSizes.data.data.map((s: any) => ({ value: s.size_id, label: s.size_name })));
       } catch (err) {
         toast.error('Failed to pre-fetch foundational catalog variables.');
       }
