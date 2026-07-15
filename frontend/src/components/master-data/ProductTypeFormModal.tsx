@@ -69,7 +69,7 @@ export const ProductTypeFormModal: React.FC<ProductTypeFormModalProps> = ({ show
                 label="Product Type Name"
                 disabled={isEditMode}
                 error={errors.product_type}
-                placeholder="e.g., Addidas, H&M"
+                placeholder="e.g., Formal Shirt, Casual Shirt"
                 {...register('product_type')}
               />
             </Col>
@@ -96,7 +96,7 @@ export const ProductTypeFormModal: React.FC<ProductTypeFormModalProps> = ({ show
             type="textarea"
             rows={2}
             error={errors.product_type_description}
-            placeholder="Enter product_type product_type_description...."
+            placeholder="Enter the description...."
             {...register('product_type_description')}
           />
 

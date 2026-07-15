@@ -38,9 +38,6 @@ def list_material(
         )
         materials_data = [MaterialRead.model_validate(materials) for materials in materials_db]
         return APIResponse.success(data=materials_data)
-
-        data = [MaterialRead.model_validate(s) for s in materials]
-        return APIResponse.success(message="Material records fetched successfully", data=data)
     except Exception as e:
         return APIResponse.fail(message=str(e))
 

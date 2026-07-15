@@ -38,9 +38,6 @@ def list_supplier(
         )
         suppliers_data = [SupplierRead.model_validate(suppliers) for suppliers in suppliers_db]
         return APIResponse.success(data=suppliers_data)
-
-        data = [SupplierRead.model_validate(s) for s in suppliers]
-        return APIResponse.success(message="Supplier records fetched successfully", data=data)
     except Exception as e:
         return APIResponse.fail(message=str(e))
 

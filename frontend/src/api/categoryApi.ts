@@ -2,6 +2,7 @@ import { api } from './axiosInstance';
 import type { APIResponse } from '../utilities/APIResponse';
 
 export interface Category {
+  department_id: string | undefined;
   category_id: string;
   category_name: string;
   category_description: string;
@@ -13,7 +14,7 @@ export interface Category {
 export interface CategoryPayload {
   category_name: string;
   category_description: string;
-  business_category_id: string;
+  department_id: string;
   is_active: boolean;
 }
 

@@ -69,7 +69,7 @@ export const SubCategoryFormModal: React.FC<SubCategoryFormModalProps> = ({ show
                 label="SubCategory Name"
                 disabled={isEditMode}
                 error={errors.sub_category_name}
-                placeholder="e.g., Addidas, H&M"
+                placeholder="e.g., Premium Smartphones, Shirts, Tops"
                 {...register('sub_category_name')}
               />
             </Col>
