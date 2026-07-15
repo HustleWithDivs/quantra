@@ -35,8 +35,6 @@ def list_brand(
         brand_data = [BrandRead.model_validate(brand) for brand in brand_db]
         return APIResponse.success(data=brand_data)
 
-        data = [BrandRead.model_validate(b) for b in brand]
-        return APIResponse.success(message="Brand records fetched successfully", data=data)
     except Exception as e:
         return APIResponse.fail(message=str(e))
 

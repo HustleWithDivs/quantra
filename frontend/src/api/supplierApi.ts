@@ -11,7 +11,7 @@ export interface Supplier {
   address: string;
   city: string;
   state: string;
-  country_id: bigint;
+  country_id: number;
   gst_number: string;
   is_active: boolean;
   created_at: string;
@@ -19,7 +19,6 @@ export interface Supplier {
 }
 
 export interface SupplierPayload {
-  supplier_id: string;
   supplier_code: string;
   supplier_name: string;
   contact_person: string;
@@ -28,10 +27,10 @@ export interface SupplierPayload {
   address: string;
   city: string;
   state: string;
-  country_id: bigint;
+  country_id: number;
   gst_number: string;
   is_active: boolean;
-  created_at: string;
+  
 }
 
 

@@ -67,7 +67,7 @@ export const MaterialFormModal: React.FC<MaterialFormModalProps> = ({ show, onCl
                 label="Material Name"
                 disabled={isEditMode}
                 error={errors.material_name}
-                placeholder="e.g., Addidas, H&M"
+                placeholder="e.g., Cotton, Linen"
                 {...register('material_name')}
               />
             </Col>

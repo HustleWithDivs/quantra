@@ -225,7 +225,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isExpanded }) => {
                   }`}
                 >
                   <FaShieldAlt className="fs-5 me-2 flex-shrink-0" />
-                  <span>Sub-Category</span>
+                  <span>Sub Category</span>
                 </Dropdown.Item> 
                  <Dropdown.Item 
                   as={Link} 
@@ -235,7 +235,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isExpanded }) => {
                   }`}
                 >
                   <FaShieldAlt className="fs-5 me-2 flex-shrink-0" />
-                  <span>Product-Type</span>
+                  <span>Product Type</span>
                 </Dropdown.Item>           
               </Dropdown.Menu>
             </Dropdown>

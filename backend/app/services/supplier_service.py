@@ -148,4 +148,15 @@ class SupplierService:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Failed to delete supplier due to a database error: {str(e)}"
-            )    
+            ) 
+
+    @staticmethod
+    def get_supplier_by_id(db: Session, supplier_id: UUID) -> Supplier:
+        supplier = db.query(Supplier).filter(Supplier.supplier_id == supplier_id).first()
+        
+        if not supplier:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Supplier with ID '{supplier_id}' could not be found."
+            )
+        return supplier           
