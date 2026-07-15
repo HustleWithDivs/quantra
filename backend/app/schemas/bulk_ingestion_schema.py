@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Dict, Any, Optional
 from uuid import UUID
 from datetime import datetime
@@ -31,9 +31,8 @@ class IngestionTemplateResponse(BaseModel):
     created_at: datetime
     modified_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
-
+    model_config = ConfigDict(from_attributes=True)
+    
 class ToggleTemplateResponse(BaseModel):
     success: bool
     message: str
@@ -45,10 +44,9 @@ class UpdateMappingPayload(BaseModel):
 
 # Specific schema for returning the template record data itself
 class IngestionTemplateSchema(BaseModel):
-    template_id: str
+    template_id: UUID
     template_name: str
     column_mapping: Dict[str, str]
     is_active: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

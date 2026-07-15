@@ -183,8 +183,11 @@ def get_template_by_id(template_id: str, db: Session = Depends(get_db)):
     template = db.query(IngestionTemplate).filter(IngestionTemplate.template_id == template_id).first()
     if not template:
         raise HTTPException(status_code=404, detail="Template mapping matrix config not found.")
-        
-    return APIResponse.success(
+    validated_data = IngestionTemplateSchema.model_validate(template)
+    # Instantiate the class directly instead of using the .success helper
+    return APIResponse(
+        code=200,
+        requestStatus=True,
         message="Template layout configuration fetched successfully.",
         data=template
     )
@@ -202,11 +205,13 @@ def update_template_mapping(template_id: str, payload: UpdateMappingPayload, db:
     db.commit()
     db.refresh(template)
 
-    return APIResponse.success(
+    # Instantiate the class directly here too
+    return APIResponse(
+        code=200,
+        requestStatus=True,
         message=f"Ingestion layout matrix changes for '{template.template_name}' updated successfully.",
         data=template
     )
-
 # --- 3. DELETE TEMPLATE ---
 @router.delete("/templates/{template_id}", response_model=APIResponse[None])
 def delete_template_mapping(template_id: str, db: Session = Depends(get_db)):
