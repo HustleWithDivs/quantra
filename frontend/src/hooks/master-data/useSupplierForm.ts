@@ -16,6 +16,7 @@ export interface UseSupplierFormProps {
 const supplierValidationSchema = yup.object().shape({
   supplier_code: yup.string().required('Supplier code tracking reference identifier is required'),
   supplier_name: yup.string().required('Supplier name parameters required'),
+  email: yup.string().email('Invalid email address configuration structure').required('Supplier contact login email is required'),
   is_active: yup.boolean().default(true),
 });
 
@@ -30,6 +31,15 @@ export const useSupplierForm = ({ show, onClose, onSave, editingSupplier }: UseS
     defaultValues: {
       supplier_code: '',
       supplier_name: '',
+      contact_person: '',
+      email: '',
+      phone: '',
+      address: '',
+      city: '',
+      state: '',
+      country_id: 1,
+      gst_number: '',
+      created_at: '',
       is_active: true
     }
   });
@@ -46,14 +56,22 @@ export const useSupplierForm = ({ show, onClose, onSave, editingSupplier }: UseS
         // 2. Fresh fetch-by-ID fallback loop if modifying a supplier profile
         if (isEditMode && editingSupplier) {
           const supplierDetailsRes = await supplierApi.getSupplierById(editingSupplier.supplier_id);
-          
+          console.log(supplierDetailsRes);
           if (supplierDetailsRes.requestStatus && supplierDetailsRes.data) {
             const freshSupplierData = supplierDetailsRes.data;
             
             reset({
               supplier_code: freshSupplierData.supplier_code,
               supplier_name: freshSupplierData.supplier_name,
-              is_active: freshSupplierData.is_active
+              contact_person: freshSupplierData.contact_person,
+              email: freshSupplierData.email,
+              phone: freshSupplierData.phone,
+              address: freshSupplierData.address,
+              city: freshSupplierData.city,
+              state: freshSupplierData.state,
+              country_id: freshSupplierData.country_id,
+              gst_number: freshSupplierData.gst_number,
+              is_active: freshSupplierData.is_active,
             });
 
            
@@ -89,6 +107,15 @@ export const useSupplierForm = ({ show, onClose, onSave, editingSupplier }: UseS
       supplier_code: data.supplier_code,
       supplier_name: data.supplier_name,
       is_active: data.is_active,
+      contact_person:  data.contact_person,
+      email:  data.email,
+      phone:  data.phone,
+      address:  data.address,
+      city:  data.city,
+      state:  data.state,
+      country_id:  data.country_id,
+      gst_number:  data.gst_number,
+      
       
     };
 

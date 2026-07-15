@@ -69,7 +69,7 @@ export const DepartmentFormModal: React.FC<DepartmentFormModalProps> = ({ show, 
                 label="Department Name"
                 disabled={isEditMode}
                 error={errors.department_name}
-                placeholder="e.g., Addidas, H&M"
+                placeholder="e.g., Mobile Phones & Tablets, Audio, Men, Women"
                 {...register('department_name')}
               />
             </Col>
@@ -96,7 +96,7 @@ export const DepartmentFormModal: React.FC<DepartmentFormModalProps> = ({ show, 
             type="textarea"
             rows={2}
             error={errors.department_description}
-            placeholder="Enter department department_description...."
+            placeholder="Enter the description...."
             {...register('department_description')}
           />
 

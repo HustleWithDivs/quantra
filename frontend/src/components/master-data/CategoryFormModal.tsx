@@ -69,7 +69,7 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ show, onCl
                 label="Category Name"
                 disabled={isEditMode}
                 error={errors.category_name}
-                placeholder="e.g., Addidas, H&M"
+                placeholder="e.g., Topwear, Western Wear"
                 {...register('category_name')}
               />
             </Col>
@@ -96,7 +96,7 @@ export const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ show, onCl
             type="textarea"
             rows={2}
             error={errors.category_description}
-            placeholder="Enter category category_description...."
+            placeholder="Enter the description...."
             {...register('category_description')}
           />
 

@@ -48,7 +48,7 @@ def get_product_type_details(
     db: Session = Depends(get_db),
     current_user: User = Depends(PermissionChecker("product_type:view_product_type"))
 ):
-    product_type_db = ProductTypeService.get_product_type_details(db=db, product_type_id=product_type_id)
+    product_type_db = ProductTypeService.get_product_type_by_id(db=db, product_type_id=product_type_id)
     return APIResponse.success(code=200, message="ProductType instance retrieved", data=product_type_db)
 
 
