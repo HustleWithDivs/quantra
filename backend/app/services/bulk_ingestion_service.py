@@ -1,6 +1,7 @@
 import logging
 import csv
 import io
+import os
 import json
 from uuid import UUID, uuid4
 from typing import List, Dict, Any, Tuple, Optional
@@ -9,7 +10,7 @@ from sqlalchemy.orm import Session
 from app.models.ingestion_template import IngestionTemplate
 from app.models.product_model import Product, ProductVariant
 
-# Import underlying hierarchy and master models assuming standard names matching schemas
+# Import underlying hierarchy and master models
 from app.models.business_category_model import BusinessCategory
 from app.models.department_model import Department
 from app.models.category_model import Category
@@ -21,7 +22,27 @@ from app.models.material_model import Material
 from app.models.color_model import Color
 from app.models.size_model import Size
 
-logger = logging.getLogger(__name__)
+# --- Dedicated Ingestion File Logger Configuration ---
+logger = logging.getLogger("ingestion_engine")
+logger.setLevel(logging.INFO)
+
+# Ensure the log directory exists safely inside the workspace container
+LOG_FILE_PATH = "/app/logs/bulk_ingestion.log"
+os.makedirs(os.path.dirname(LOG_FILE_PATH), exist_ok=True)
+
+# Add File Handler if handlers aren't already attached (prevents duplicate bindings)
+if not logger.handlers:
+    file_handler = logging.FileHandler(LOG_FILE_PATH, encoding="utf-8")
+    file_formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
+    file_handler.setFormatter(file_formatter)
+    logger.addHandler(file_handler)
+    
+    # Optional: Keep terminal console streaming enabled alongside the log file
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(file_formatter)
+    logger.addHandler(console_handler)
+    
+    logger.propagate = False
 
 class SmartMdmEngine:
 
@@ -50,21 +71,21 @@ class SmartMdmEngine:
                 best_template = t
 
         return best_template, best_score
+
     @classmethod
     def process_bytes_in_background(cls, db_session_factory, file_bytes: bytes, column_map: Dict[str, str]):
         """Decodes file bytes to string and processes rows safely away from the main thread loop."""
         try:
-            # Safely handle encoding decodes inside the isolated thread background context
             csv_content = file_bytes.decode("utf-8")
             cls.process_csv_rows_task(db_session_factory, csv_content, column_map)
         except Exception as err:
             logger.error(f"Fatal background parsing worker initialization exception: {str(err)}")
+
     @classmethod
     def resolve_master_entity(cls, db: Session, model_cls: Any, name_field: str, value: str, fallback_fields: Dict[str, Any] = None) -> UUID:
-        """Finds or creates an individual master metadata or taxonomy node dynamically."""
+        """Finds or creates an individual master metadata node dynamically using flush transaction bounds."""
         clean_val = str(value or "").strip()
         if not clean_val:
-            # Fallback to a default context entity to avoid structural integrity cracks
             clean_val = f"Unknown {model_cls.__name__}"
             
         entity = db.query(model_cls).filter(getattr(model_cls, name_field) == clean_val).first()
@@ -80,62 +101,110 @@ class SmartMdmEngine:
                 
             entity = model_cls(**params)
             db.add(entity)
-            db.commit()
-            db.refresh(entity)
+            db.flush()  # ✅ Atomic write to generate UUID inside open transaction bounds
+            logger.info(f"   [MASTER CREATED] Model: {model_cls.__name__} | Name: '{clean_val}' -> ID: {getattr(entity, model_cls.__tablename__ + '_id')}")
+        else:
+            logger.info(f"   [MASTER RESOLVED] Model: {model_cls.__name__} | Name: '{clean_val}' -> ID: {getattr(entity, model_cls.__tablename__ + '_id')}")
+            
         return getattr(entity, f"{model_cls.__tablename__}_id")
 
     @classmethod
     def process_csv_rows_task(cls, db_session_factory, csv_content: str, column_map: Dict[str, str]):
-        """Runs inside an asynchronous background thread to parse rows, build hierarchies and insert items."""
+        """Parses rows, builds taxonomy master records step-by-step, and links items to file stream logs."""
         db: Session = db_session_factory()
         success_count = 0
         failure_count = 0
+
+        logger.info("======================================================================")
+        logger.info("⚡ INGESTION PIPELINE STARTED ⚡")
+        logger.info(f"Target Column Mapping: {json.dumps(column_map, indent=2)}")
+        logger.info("======================================================================")
 
         try:
             f = io.StringIO(csv_content)
             reader = csv.DictReader(f)
             
-            for index, raw_row in enumerate(reader):
+            for index, raw_row in enumerate(reader, start=1):
+                sku_val = raw_row.get('sku', raw_row.get('SKU', 'UNKNOWN'))
+                logger.info(f"--- [ROW #{index}] Processing SKU: {sku_val} ---")
                 try:
-                    # Invert column mapping to parse keys using database targets
                     normalized_row = {}
                     for file_header, target_field in column_map.items():
                         if file_header in raw_row:
                             normalized_row[target_field] = raw_row[file_header]
 
-                    if not normalized_row.get("sku"):
-                        logger.warning(f"Row index {index} skipped: missing required unique SKU code field alignment.")
+                    sku = normalized_row.get("sku") or raw_row.get("sku") or raw_row.get("SKU")
+                    if not sku:
+                        logger.warning(f"❌ [Row #{index}] Skipped: Missing unique SKU column alignment.")
                         failure_count += 1
                         continue
 
-                    # Prevent duplicate mutations on existing unique SKUs
+                    normalized_row["sku"] = sku.strip()
+
                     existing_product = db.query(Product).filter(Product.sku == normalized_row["sku"]).first()
                     if existing_product:
+                        logger.warning(f"⚠️ [Row #{index}] Skipped: SKU '{normalized_row['sku']}' already exists.")
                         failure_count += 1
                         continue
 
                     # 1. Resolve 5-Tier Taxonomy Hierarchy Loop
-                    bc_id = cls.resolve_master_entity(db, BusinessCategory, "business_category_name", normalized_row.get("business_category_name", "General"))
-                    dept_id = cls.resolve_master_entity(db, Department, "department_name", normalized_row.get("department_name", "General"), {"business_category_id": bc_id})
-                    cat_id = cls.resolve_master_entity(db, Category, "category_name", normalized_row.get("category_name", "General"))
-                    sub_cat_id = cls.resolve_master_entity(db, SubCategory, "sub_category_name", normalized_row.get("sub_category_name", "General"))
-                    pt_id = cls.resolve_master_entity(db, ProductType, "product_type", normalized_row.get("product_type", "Standard"))
+                    logger.info("   -> Resolving Taxonomy Masters...")
+                    bc_id = cls.resolve_master_entity(
+                        db, BusinessCategory, "business_category_name", 
+                        normalized_row.get("business_category_name") or normalized_row.get("business_category", "General")
+                    )
+                    dept_id = cls.resolve_master_entity(
+                        db, Department, "department_name", 
+                        normalized_row.get("department_name") or normalized_row.get("department", "General"), 
+                        {"business_category_id": bc_id}
+                    )
+                    cat_id = cls.resolve_master_entity(
+                        db, Category, "category_name", 
+                        normalized_row.get("category_name") or normalized_row.get("category", "General")
+                    )
+                    sub_cat_id = cls.resolve_master_entity(
+                        db, SubCategory, "sub_category_name", 
+                        normalized_row.get("sub_category_name") or normalized_row.get("sub_category", "General")
+                    )
+                    pt_id = cls.resolve_master_entity(
+                        db, ProductType, "product_type", 
+                        normalized_row.get("product_type", "Standard")
+                    )
 
-                    # 2. Resolve Master Records (Brand, Supplier, Material)
-                    brand_id = cls.resolve_master_entity(db, Brand, "brand_name", normalized_row.get("brand_name", "Generic"))
-                    supplier_id = cls.resolve_master_entity(db, Supplier, "supplier_name", normalized_row.get("supplier_name", "Generic Supplier"), {"supplier_code": f"SUPP-{uuid4().hex[:6].upper()}"})
-                    material_id = cls.resolve_master_entity(db, Material, "material_name", normalized_row.get("material_name", "Standard"))
+                    # 2. Resolve Core Master Entities (Brand, Supplier, Material)
+                    logger.info("   -> Resolving Core Masters...")
+                    brand_id = cls.resolve_master_entity(
+                        db, Brand, "brand_name", 
+                        normalized_row.get("brand_name") or normalized_row.get("brand", "Generic")
+                    )
+                    supplier_id = cls.resolve_master_entity(
+                        db, Supplier, "supplier_name", 
+                        normalized_row.get("supplier_name") or normalized_row.get("supplier", "Generic Supplier"), 
+                        {"supplier_code": f"SUPP-{uuid4().hex[:6].upper()}"}
+                    )
+                    material_id = cls.resolve_master_entity(
+                        db, Material, "material_name", 
+                        normalized_row.get("material_name") or normalized_row.get("material", "Standard")
+                    )
 
                     # 3. Resolve Variant Attribute Identifiers
-                    color_id = cls.resolve_master_entity(db, Color, "color_name", normalized_row.get("color_name", "Default Color"))
-                    size_id = cls.resolve_master_entity(db, Size, "size_name", normalized_row.get("size_name", "Standard Size"))
+                    logger.info("   -> Resolving Attribute Masters...")
+                    color_id = cls.resolve_master_entity(
+                        db, Color, "color_name", 
+                        normalized_row.get("color_name") or normalized_row.get("color", "Default Color")
+                    )
+                    size_id = cls.resolve_master_entity(
+                        db, Size, "size_name", 
+                        normalized_row.get("size_name") or normalized_row.get("size", "Standard Size")
+                    )
 
-                    # Create core enterprise product context record
+                    # 4. Provision Core Enterprise Product Record
+                    logger.info("   -> Inserting Product entity...")
                     new_product = Product(
                         sku=normalized_row["sku"],
-                        product_name=normalized_row.get("product_name", f"Product-{normalized_row['sku']}"),
+                        product_name=normalized_row.get("product_name") or normalized_row.get("name") or f"Product-{normalized_row['sku']}",
                         upc_ean=normalized_row.get("upc_ean"),
-                        short_description=normalized_row.get("short_description"),
+                        short_description=normalized_row.get("short_description") or normalized_row.get("description"),
                         long_description=normalized_row.get("long_description"),
                         barcode=normalized_row.get("barcode"),
                         min_order_qty=int(normalized_row.get("min_order_qty", 1)),
@@ -157,7 +226,8 @@ class SmartMdmEngine:
                     db.add(new_product)
                     db.flush()
 
-                    # Provision child transactional operational variant
+                    # 5. Provision Child Product Variant Record
+                    logger.info("   -> Provisioning Variant details...")
                     new_variant = ProductVariant(
                         product_id=new_product.product_id,
                         color_id=color_id,
@@ -165,20 +235,27 @@ class SmartMdmEngine:
                         product_images=[]
                     )
                     db.add(new_variant)
+                    
                     success_count += 1
+                    logger.info(f"✅ [Row #{index}] Successfully imported Product (ID: {new_product.product_id}) and Variant.")
 
                     if success_count % 100 == 0:
                         db.commit()
+                        logger.info("💾 Chunk batch transaction committed successfully to database storage.")
 
                 except Exception as row_err:
                     db.rollback()
-                    logger.error(f"Error skipping data row index {index}: {str(row_err)}")
+                    logger.error(f"❌ [Row #{index}] Failed to import. Rollback completed. Error: {str(row_err)}")
                     failure_count += 1
 
             db.commit()
         except Exception as global_err:
             db.rollback()
-            logger.error(f"Fatal exception raised during bulk parsing processing context: {str(global_err)}")
+            logger.error(f"🚨 Fatal exception raised in CSV reader thread: {str(global_err)}")
         finally:
             db.close()
-            logger.info(f"Background smart ingestion task finished execution. Saved: {success_count}, Failed: {failure_count}")
+            logger.info("======================================================================")
+            logger.info("🏁 INGESTION PIPELINE FINISHED 🏁")
+            logger.info(f"Results -> Saved: {success_count} | Failed: {failure_count}")
+            logger.info(f"Log file written to: {LOG_FILE_PATH}")
+            logger.info("======================================================================")

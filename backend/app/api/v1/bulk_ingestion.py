@@ -12,8 +12,6 @@ from app.schemas.bulk_ingestion_schema import AnalyzeFileResponseData, SaveMappi
 from typing import Any, Dict, List, Optional, Tuple
 from app.schemas.response_schema import APIResponse
 
-from datetime import datetime
-
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/ingestion", tags=["Smart MDM Bulk Ingestion"])
 
@@ -31,7 +29,6 @@ async def analyze_file(file: UploadFile = File(...), db: Session = Depends(get_d
     if not headers:
         raise HTTPException(status_code=400, detail="Empty matrix layer tracked. File does not contain headers.")
 
-    # Re-read first few data rows for preview visibility
     f.seek(0)
     dict_reader = csv.DictReader(f)
     preview_rows = []
@@ -42,7 +39,6 @@ async def analyze_file(file: UploadFile = File(...), db: Session = Depends(get_d
         else:
             break
 
-    # Resolve system schema templates using priority matching rules
     matched_template, score = SmartMdmEngine.find_matching_template(db, headers)
     
     if matched_template:
@@ -50,7 +46,6 @@ async def analyze_file(file: UploadFile = File(...), db: Session = Depends(get_d
         mapping_exists = True
         template_id = matched_template.template_id
     else:
-        # Fallback to OpenRouter metadata structural semantic engine logic
         suggested_mapping = generate_ai_mapping_suggestions(headers)
         mapping_exists = False
         template_id = None
@@ -90,13 +85,9 @@ async def execute_bulk_upload(
     column_mapping_json: Any = Form(...),
 ):
     column_mapping = None
-
-    # Defensive parsing layer to handle any double-stringified or escaped frontend strings
     try:
         if isinstance(column_mapping_json, str):
             clean_str = column_mapping_json.strip()
-            
-            # Recursively unwrap string quotes or escapes if Axios double-serialized it
             while isinstance(clean_str, str) and (clean_str.startswith('"') and clean_str.endswith('"') or clean_str.startswith('{')):
                 try:
                     parsed = json.loads(clean_str)
@@ -117,12 +108,8 @@ async def execute_bulk_upload(
             
     except Exception as parse_err:
         logger.error(f"Mapping structural parsing failed. Raw input: {column_mapping_json}. Error: {str(parse_err)}")
-        raise HTTPException(
-            status_code=400, 
-            detail="Invalid layout schema dictionary serialization string."
-        )
+        raise HTTPException(status_code=400, detail="Invalid layout schema dictionary serialization string.")
 
-    # Read the raw binary bytes instantly to avoid thread blocks
     try:
         file_bytes = await file.read()
     except Exception as e:
@@ -131,7 +118,6 @@ async def execute_bulk_upload(
     def db_session_factory():
         return Session(bind=engine)
 
-    # Offload the execution entirely to the background thread context
     background_tasks.add_task(
         SmartMdmEngine.process_bytes_in_background,
         db_session_factory=db_session_factory,
@@ -139,43 +125,16 @@ async def execute_bulk_upload(
         column_map=column_mapping
     )
 
-    # ✅ Returns a clean structure perfectly mapped to your schema's fields
     return ExecuteBulkUploadResponse(
         code=status.HTTP_202_ACCEPTED,
         requestStatus=True,
-        message="Your file data has been safely received! The MDM engine is parsing your data in the background, and items will be available shortly.",
+        message="Your file data has been safely received! Processing logs are streaming to /app/logs/bulk_ingestion.log",
         data=None
     )
-    try:
-        column_mapping = json.loads(column_mapping_json)
-    except Exception:
-        raise HTTPException(status_code=400, detail="Invalid layout schema dictionary serialization string.")
-
-    contents = await file.read()
-    decoded_content = contents.decode("utf-8")
-
-    def db_session_factory():
-        return Session(bind=engine)
-
-    background_tasks.add_task(
-        SmartMdmEngine.process_csv_rows_task,
-        db_session_factory=db_session_factory,
-        csv_content=decoded_content,
-        column_map=column_mapping
-    )
-
-    return {
-        "requestStatus": True,
-        "message": "CSV ingestion pipeline processing task initialized successfully in the background."
-    }
 
 @router.get("/templates", response_model=List[IngestionTemplateResponse])
 def get_all_templates(db: Session = Depends(get_db)):
-    """
-    Retrieves all saved supplier layout mapping configurations from the system database.
-    """
-    templates = db.query(IngestionTemplate).order_by(IngestionTemplate.created_at.desc()).all()
-    return templates
+    return db.query(IngestionTemplate).order_by(IngestionTemplate.created_at.desc()).all()
 
 # --- 1. GET TEMPLATE BY ID ---
 @router.get("/templates/{template_id}", response_model=APIResponse[IngestionTemplateSchema])
@@ -183,13 +142,13 @@ def get_template_by_id(template_id: str, db: Session = Depends(get_db)):
     template = db.query(IngestionTemplate).filter(IngestionTemplate.template_id == template_id).first()
     if not template:
         raise HTTPException(status_code=404, detail="Template mapping matrix config not found.")
+    
     validated_data = IngestionTemplateSchema.model_validate(template)
-    # Instantiate the class directly instead of using the .success helper
     return APIResponse(
         code=200,
         requestStatus=True,
         message="Template layout configuration fetched successfully.",
-        data=template
+        data=validated_data
     )
 
 # --- 2. PUT (UPDATE) TEMPLATE ---
@@ -205,13 +164,14 @@ def update_template_mapping(template_id: str, payload: UpdateMappingPayload, db:
     db.commit()
     db.refresh(template)
 
-    # Instantiate the class directly here too
+    validated_data = IngestionTemplateSchema.model_validate(template)
     return APIResponse(
         code=200,
         requestStatus=True,
         message=f"Ingestion layout matrix changes for '{template.template_name}' updated successfully.",
-        data=template
+        data=validated_data
     )
+
 # --- 3. DELETE TEMPLATE ---
 @router.delete("/templates/{template_id}", response_model=APIResponse[None])
 def delete_template_mapping(template_id: str, db: Session = Depends(get_db)):
@@ -226,8 +186,9 @@ def delete_template_mapping(template_id: str, db: Session = Depends(get_db)):
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
         
-    # Explicitly pass data=None to ensure it overrides the default [] fallback in .success()
-    return APIResponse.success(
+    return APIResponse(
+        code=200,
+        requestStatus=True,
         message=f"Template layout configuration '{template.template_name}' has been deleted successfully.",
         data=None 
     )
