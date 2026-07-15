@@ -21,13 +21,15 @@ from app.models.supplier_model import Supplier
 from app.models.material_model import Material
 from app.models.color_model import Color
 from app.models.size_model import Size
+from datetime import datetime
 
+timestamp = datetime.now().strftime("%Y%m%d_%H")
 # --- Dedicated Ingestion File Logger Configuration ---
 logger = logging.getLogger("ingestion_engine")
 logger.setLevel(logging.INFO)
 
 # Ensure the log directory exists safely inside the workspace container
-LOG_FILE_PATH = "/app/logs/bulk_ingestion.log"
+LOG_FILE_PATH = f"/app/logs/bulk_ingestion_{timestamp}.log"
 os.makedirs(os.path.dirname(LOG_FILE_PATH), exist_ok=True)
 
 # Add File Handler if handlers aren't already attached (prevents duplicate bindings)
@@ -48,11 +50,11 @@ class SmartMdmEngine:
 
     @staticmethod
     def calculate_header_match(csv_headers: List[str], saved_mapping: Dict[str, str]) -> float:
-        """Calculates matching ratio of incoming CSV headers against an existing template template."""
-        saved_headers = list(saved_mapping.keys())
+        """Calculates matching ratio of incoming CSV headers against an existing template mapping template."""
+        saved_headers = [h.strip().lower() for h in saved_mapping.keys()]
         if not saved_headers:
             return 0.0
-        matches = sum(1 for h in csv_headers if h in saved_headers)
+        matches = sum(1 for h in csv_headers if h.strip().lower() in saved_headers)
         return (matches / max(len(csv_headers), len(saved_headers))) * 100.0
 
     @classmethod
@@ -82,11 +84,11 @@ class SmartMdmEngine:
             logger.error(f"Fatal background parsing worker initialization exception: {str(err)}")
 
     @classmethod
-    def resolve_master_entity(cls, db: Session, model_cls: Any, name_field: str, value: str, fallback_fields: Dict[str, Any] = None) -> UUID:
+    def resolve_master_entity(cls, db: Session, model_cls: Any, name_field: str, value: str, fallback_fields: Dict[str, Any] = None, default_fallback: str = "Unknown") -> UUID:
         """Finds or creates an individual master metadata node dynamically using flush transaction bounds."""
         clean_val = str(value or "").strip()
         if not clean_val:
-            clean_val = f"Unknown {model_cls.__name__}"
+            clean_val = default_fallback
             
         entity = db.query(model_cls).filter(getattr(model_cls, name_field) == clean_val).first()
         if not entity:
@@ -124,16 +126,26 @@ class SmartMdmEngine:
             f = io.StringIO(csv_content)
             reader = csv.DictReader(f)
             
+            # Normalize column map keys for robust case-insensitive lookup
+            normalized_column_map = {k.strip().lower(): v for k, v in column_map.items()}
+
             for index, raw_row in enumerate(reader, start=1):
-                sku_val = raw_row.get('sku', raw_row.get('SKU', 'UNKNOWN'))
+                # Safely normalize the row keys to avoid whitespace or casing issues
+                clean_row = {str(k).strip().lower(): str(v).strip() for k, v in raw_row.items() if k is not None}
+                
+                # Fetch SKU safely
+                sku_val = clean_row.get('sku', clean_row.get('vendor_sku', 'UNKNOWN'))
                 logger.info(f"--- [ROW #{index}] Processing SKU: {sku_val} ---")
+                
                 try:
                     normalized_row = {}
-                    for file_header, target_field in column_map.items():
-                        if file_header in raw_row:
-                            normalized_row[target_field] = raw_row[file_header]
+                    # Build normalized row using the case-insensitive normalized column mapping
+                    for file_header_lower, target_field in normalized_column_map.items():
+                        if file_header_lower in clean_row:
+                            normalized_row[target_field] = clean_row[file_header_lower]
 
-                    sku = normalized_row.get("sku") or raw_row.get("sku") or raw_row.get("SKU")
+                    # Retrieve unique product key (SKU)
+                    sku = normalized_row.get("sku") or clean_row.get("sku") or clean_row.get("vendor_sku")
                     if not sku:
                         logger.warning(f"❌ [Row #{index}] Skipped: Missing unique SKU column alignment.")
                         failure_count += 1
@@ -147,73 +159,91 @@ class SmartMdmEngine:
                         failure_count += 1
                         continue
 
+                    # Helper to cleanly extract mapped master names, falling back to None instead of empty strings
+                    def get_mapped_val(*fields: str) -> Optional[str]:
+                        for f in fields:
+                            val = normalized_row.get(f)
+                            if val and val.strip():
+                                return val.strip()
+                        return None
+
                     # 1. Resolve 5-Tier Taxonomy Hierarchy Loop
                     logger.info("   -> Resolving Taxonomy Masters...")
                     bc_id = cls.resolve_master_entity(
                         db, BusinessCategory, "business_category_name", 
-                        normalized_row.get("business_category_name") or normalized_row.get("business_category", "General")
+                        get_mapped_val("business_category_name", "business_category", "biz_group"),
+                        default_fallback="General"
                     )
                     dept_id = cls.resolve_master_entity(
                         db, Department, "department_name", 
-                        normalized_row.get("department_name") or normalized_row.get("department", "General"), 
-                        {"business_category_id": bc_id}
+                        get_mapped_val("department_name", "department", "dept_code"), 
+                        {"business_category_id": bc_id},
+                        default_fallback="General"
                     )
                     cat_id = cls.resolve_master_entity(
                         db, Category, "category_name", 
-                        normalized_row.get("category_name") or normalized_row.get("category", "General")
+                        get_mapped_val("category_name", "category", "division"),
+                        default_fallback="General"
                     )
                     sub_cat_id = cls.resolve_master_entity(
                         db, SubCategory, "sub_category_name", 
-                        normalized_row.get("sub_category_name") or normalized_row.get("sub_category", "General")
+                        get_mapped_val("sub_category_name", "sub_category", "sub_group"),
+                        default_fallback="General"
                     )
                     pt_id = cls.resolve_master_entity(
                         db, ProductType, "product_type", 
-                        normalized_row.get("product_type", "Standard")
+                        get_mapped_val("product_type", "style_type"),
+                        default_fallback="Standard"
                     )
 
                     # 2. Resolve Core Master Entities (Brand, Supplier, Material)
                     logger.info("   -> Resolving Core Masters...")
                     brand_id = cls.resolve_master_entity(
                         db, Brand, "brand_name", 
-                        normalized_row.get("brand_name") or normalized_row.get("brand", "Generic")
+                        get_mapped_val("brand_name", "brand"),
+                        default_fallback="Generic"
                     )
                     supplier_id = cls.resolve_master_entity(
                         db, Supplier, "supplier_name", 
-                        normalized_row.get("supplier_name") or normalized_row.get("supplier", "Generic Supplier"), 
-                        {"supplier_code": f"SUPP-{uuid4().hex[:6].upper()}"}
+                        get_mapped_val("supplier_name", "supplier", "vendor"), 
+                        {"supplier_code": f"SUPP-{uuid4().hex[:6].upper()}"},
+                        default_fallback="Generic Supplier"
                     )
                     material_id = cls.resolve_master_entity(
                         db, Material, "material_name", 
-                        normalized_row.get("material_name") or normalized_row.get("material", "Standard")
+                        get_mapped_val("material_name", "material", "fabric"),
+                        default_fallback="Standard"
                     )
 
                     # 3. Resolve Variant Attribute Identifiers
                     logger.info("   -> Resolving Attribute Masters...")
                     color_id = cls.resolve_master_entity(
                         db, Color, "color_name", 
-                        normalized_row.get("color_name") or normalized_row.get("color", "Default Color")
+                        get_mapped_val("color_name", "color"),
+                        default_fallback="Default Color"
                     )
                     size_id = cls.resolve_master_entity(
                         db, Size, "size_name", 
-                        normalized_row.get("size_name") or normalized_row.get("size", "Standard Size")
+                        get_mapped_val("size_name", "size", "size_dimensions"),
+                        default_fallback="Standard Size"
                     )
 
                     # 4. Provision Core Enterprise Product Record
                     logger.info("   -> Inserting Product entity...")
                     new_product = Product(
                         sku=normalized_row["sku"],
-                        product_name=normalized_row.get("product_name") or normalized_row.get("name") or f"Product-{normalized_row['sku']}",
-                        upc_ean=normalized_row.get("upc_ean"),
-                        short_description=normalized_row.get("short_description") or normalized_row.get("description"),
-                        long_description=normalized_row.get("long_description"),
-                        barcode=normalized_row.get("barcode"),
-                        min_order_qty=int(normalized_row.get("min_order_qty", 1)),
-                        weight=float(normalized_row["weight"]) if normalized_row.get("weight") else None,
-                        dimensions=normalized_row.get("dimensions"),
-                        uom=normalized_row.get("uom", "Pcs"),
-                        cost_price=float(normalized_row.get("cost_price", 0.0)),
-                        selling_price=float(normalized_row.get("selling_price", 0.0)),
-                        stock_qty=int(normalized_row.get("stock_qty", 0)),
+                        product_name=get_mapped_val("product_name", "name", "item_title") or f"Product-{normalized_row['sku']}",
+                        upc_ean=get_mapped_val("upc_ean", "barcode_ean", "barcode"),
+                        short_description=get_mapped_val("short_description", "description", "brief_desc"),
+                        long_description=get_mapped_val("long_description", "detailed_description"),
+                        barcode=get_mapped_val("barcode", "barcode_ean"),
+                        min_order_qty=int(normalized_row.get("min_order_qty") or clean_row.get("min_order") or 1),
+                        weight=float(normalized_row["weight"]) if normalized_row.get("weight") else (float(clean_row["item_weight"]) if clean_row.get("item_weight") else None),
+                        dimensions=get_mapped_val("dimensions", "size_dimensions"),
+                        uom=get_mapped_val("uom", "unit_type") or "Pcs",
+                        cost_price=float(normalized_row.get("cost_price") or clean_row.get("cost") or 0.0),
+                        selling_price=float(normalized_row.get("selling_price") or clean_row.get("retail_price") or 0.0),
+                        stock_qty=int(normalized_row.get("stock_qty") or clean_row.get("initial_qty") or 0),
                         business_category_id=bc_id,
                         department_id=dept_id,
                         category_id=cat_id,

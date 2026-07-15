@@ -7,11 +7,11 @@ from langchain_openai import ChatOpenAI
 # 1. Predefined database schema fields expected by your system
 DB_TARGET_FIELDS = [
     "sku", "product_name", "upc_ean", "short_description", "long_description",
-    "business_category_id", "department_id", "category_id", "sub_category_id", "product_type_id",
-    "brand_id", "supplier_id", "material_id", "barcode",
+    "business_category_name", "department_name", "category_name", "sub_category_name", "product_type_name",
+    "brand_name", "supplier_name", "material_name", "barcode",
     "cost_price", "selling_price", "stock_qty",'barcode', "min_order_qty", 
     "weight", "dimensions", "uom","is_active", "is_taxable", "is_perishable",
-     "expiry_date", "color_name", "size_value"
+     "expiry_date", "color_name", "size_name"
 ]
 
 class ColumnMappingSuggestion(BaseModel):
