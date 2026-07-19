@@ -9,7 +9,7 @@ from typing import Dict, Any, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.models.customer_order_model import Customer, Order, CustomerOrderHistory
-from app.models.product_model import Product  # Imported the Product model directly
+from app.models.product_model import Product
 
 # --- Ingestion Hourly File Logger Configuration ---
 timestamp = datetime.now().strftime("%Y%m%d_%H")
@@ -75,6 +75,19 @@ class CustomerOrderIngestionEngine:
                         continue
 
                     # -------------------------------------------------------------
+                    # DYNAMIC DATE RESOLUTION LOGIC
+                    # -------------------------------------------------------------
+                    csv_created_at_raw = grab("created_at") or grab("order_creation_date")
+                    row_timestamp = datetime.utcnow()  # Fallback to current datetime
+
+                    if csv_created_at_raw:
+                        try:
+                            # Safely handle potential ISO formatting offsets
+                            row_timestamp = datetime.fromisoformat(csv_created_at_raw.replace("Z", "+00:00"))
+                        except ValueError:
+                            logger.warning(f"⚠️ [Row #{index}] Could not parse datetime string '{csv_created_at_raw}'. Defaulting to system time.")
+
+                    # -------------------------------------------------------------
                     # LOOKUP STEP 1: Fetch country_id from country_with_currencies
                     # -------------------------------------------------------------
                     country_name_string = grab("country")
@@ -125,16 +138,17 @@ class CustomerOrderIngestionEngine:
                             telephone=grab("telephone"),
                             address=grab("address"),
                             city=grab("city"),
-                            country=country_id_bigint,  # Sets the safe BIGINT database ID
+                            country=country_id_bigint,
                             gender=grab("gender"),
                             date_of_birth=dob_parsed,
                             is_active=str(grab("is_active", "true")).lower() == "true",
                             source=source,
                             source_customer_id=src_cust_id,
-                            created_by=current_user_id
+                            created_by=current_user_id,
+                            created_at=row_timestamp  # Applied dynamic date
                         )
                         db.add(customer)
-                        logger.info(f"   [CUSTOMER CREATED] Source: {source} | ID: {src_cust_id} | Country ID: {country_id_bigint}")
+                        logger.info(f"   [CUSTOMER CREATED] Source: {source} | ID: {src_cust_id}")
                     else:
                         customer.first_name = grab("first_name", customer.first_name)
                         customer.last_name = grab("last_name", customer.last_name)
@@ -148,7 +162,7 @@ class CustomerOrderIngestionEngine:
                             customer.date_of_birth = dob_parsed
                         customer.is_active = str(grab("is_active", str(customer.is_active))).lower() == "true"
                         customer.modified_by = current_user_id
-                        customer.modified_at = datetime.utcnow()
+                        customer.modified_at = row_timestamp  # Applied dynamic date
                         logger.info(f"   [CUSTOMER UPDATED] Internal ID: {customer.customer_id}")
 
                     db.flush()
@@ -170,7 +184,8 @@ class CustomerOrderIngestionEngine:
                             status=grab("status", "Pending"),
                             currency=grab("currency", "USD"),
                             is_active=str(grab("is_active", "true")).lower() == "true",
-                            created_by=current_user_id
+                            created_by=current_user_id,
+                            created_at=row_timestamp  # Applied dynamic date
                         )
                         db.add(order)
                         logger.info(f"   [ORDER CREATED] Invoice: {invoice}")
@@ -184,13 +199,13 @@ class CustomerOrderIngestionEngine:
                         order.currency = grab("currency", order.currency)
                         order.is_active = str(grab("is_active", str(order.is_active))).lower() == "true"
                         order.modified_by = current_user_id
-                        order.modified_at = datetime.utcnow()
+                        order.modified_at = row_timestamp  # Applied dynamic date
                         logger.info(f"   [ORDER UPDATED] Internal ID: {order.order_id}")
 
                     db.flush()
 
                     # -------------------------------------------------------------
-                    # STEP 3: UPSERT CUSTOMER ORDER HISTORY NODE (Using Valid UUID)
+                    # STEP 3: UPSERT CUSTOMER ORDER HISTORY NODE (Composite Key Supported)
                     # -------------------------------------------------------------
                     history = db.query(CustomerOrderHistory).filter(
                         CustomerOrderHistory.order_id == order.order_id,
@@ -200,14 +215,15 @@ class CustomerOrderIngestionEngine:
                     if not history:
                         history = CustomerOrderHistory(
                             order_id=order.order_id,
-                            product_id=resolved_product_id,  # Safely populated with master catalog UUID
+                            product_id=resolved_product_id,
                             is_discounted=str(grab("is_discounted", "false")).lower() == "true",
                             price=float(grab("price", 0.0)),
                             quantity=int(grab("quantity", 1)),
                             total=float(grab("total", 0.0)),
                             sales_price=float(grab("sales_price", 0.0)),
                             is_active=str(grab("is_active", "true")).lower() == "true",
-                            created_by=current_user_id
+                            created_by=current_user_id,
+                            created_at=row_timestamp  # Applied dynamic date
                         )
                         db.add(history)
                         logger.info(f"   [HISTORY CREATED] Item Linked -> Target Product UUID: {resolved_product_id}")
@@ -219,7 +235,7 @@ class CustomerOrderIngestionEngine:
                         history.sales_price = float(grab("sales_price", history.sales_price))
                         history.is_active = str(grab("is_active", str(history.is_active))).lower() == "true"
                         history.modified_by = current_user_id
-                        history.modified_at = datetime.utcnow()
+                        history.modified_at = row_timestamp  # Applied dynamic date
                         logger.info("   [HISTORY UPDATED] Existing Item Record Alignment Modified.")
 
                     success_count += 1

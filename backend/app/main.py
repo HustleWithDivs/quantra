@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.exceptions import setup_exception_handlers
 from app.core.database import engine, Base
+from app.models import forecasting_model
 from app.api.v1.auth import router as auth_router
 from app.api.v1.roles import router as roles_router
 from app.api.v1.permissions import router as permissions_router
@@ -19,6 +20,7 @@ from app.api.v1.material import router as material
 from app.api.v1.product import router as product_router  
 from app.api.v1.bulk_ingestion import router as bulk_ingestion_router
 from app.api.v1.customer_order import router as  customer_order_router
+from app.api.v1.forecasting import router as forecasting_router
 from fastapi.staticfiles import StaticFiles
 import os
 # Auto-generate database tables on startup
@@ -30,6 +32,10 @@ app = FastAPI(
     description="Enterprise Access Control Kernel & Autonomous Operations Platform for Quantra",
     version="1.0.0"
 )
+@app.on_event("startup")
+def configure_analytical_schemas():
+    # Automatically tracks metadata hooks and initializes missing columns/tables
+    forecasting_model.Base.metadata.create_all(bind=engine)
 os.makedirs(os.path.join("static", "uploads", "products"), exist_ok=True)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.add_middleware(
@@ -57,6 +63,7 @@ app.include_router(material,prefix="/api/v1")
 app.include_router(product_router,prefix="/api/v1")
 app.include_router(bulk_ingestion_router, prefix=("/api/v1"))
 app.include_router(customer_order_router, prefix=("/api/v1"))
+app.include_router(forecasting_router, prefix=("/api/v1"))
 
 
 

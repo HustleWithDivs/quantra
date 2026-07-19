@@ -20,7 +20,7 @@ const Category = lazy(() => import('../../pages/master-data/category'));
 const SubCategory = lazy(() => import('../../pages/master-data/sub-category'));
 const ProductType = lazy(() => import('../../pages/master-data/product-type'));
 const ProductWizardPage = lazy(() => import('../../pages/product/ProductWizardPage'));
-
+const DemandForecasting = lazy(()=> import('../../pages/DemandForecasting'))
 const Customer = lazy(() => import('../../pages/Customer'));
 const Users = lazy(() => import('../../pages/user-management/Users'));
 const Roles = lazy(() => import('../../pages/user-management/Roles'));
@@ -79,6 +79,7 @@ const PageLayout=({theme,setTheme}) =>{
                 <Route path="/user-management/users" element={<Users />} />
                 <Route path="/user-management/roles" element={<Roles />} />
                 <Route path="/settings" element={<Settings />} />
+                <Route path="/demand-forecasting" element={<DemandForecasting/>}/>
                 <Route path="/button-example" element={<QuantraButtonExample />} />
                 <Route path="/input-example" element={<QuantraInputFieldExample />} />
                 <Route path="/table-example" element={<QuantraTableExample />} />
