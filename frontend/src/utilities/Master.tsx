@@ -348,6 +348,16 @@ export const getDepartmentTableColumns = ({ onEdit, onDelete }: DepartmentColumn
     render: (row) => <span className="fw-semibold text-primary">{row.department_name || ''}</span>,
   },
   {
+    key: 'business_category_name',
+    header: 'Business Category',
+    sortable: true,
+    render: (row) => (
+      <span className="text-dark fw-medium">
+        {row.business_category_name || '-'}
+      </span>
+    ),
+  },
+  {
     key: 'department_description',
     header: 'Description',
     sortable: false,
