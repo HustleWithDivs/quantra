@@ -1,12 +1,11 @@
 # app/models/department_model.py
 import uuid
-from sqlalchemy import Column, String, Boolean, TIMESTAMP, ForeignKey
+from sqlalchemy import Column, String, Text, Boolean, TIMESTAMP, Date, ForeignKey, Numeric, BigInteger
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from app.core.database import Base
-from app.models.business_category_model import BusinessCategory
-
+from typing import List, Optional
 class Department(Base):
     __tablename__ = "department"
 
@@ -27,3 +26,8 @@ class Department(Base):
         secondary="department_category",
         back_populates="departments"
     )
+
+    # ADDED PROPERTY: Automatically provides name to Pydantic from relationship
+    @property
+    def business_category_name(self) -> Optional[str]:
+        return self.business_category.business_category_name if self.business_category else None

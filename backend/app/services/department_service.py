@@ -8,6 +8,7 @@ from sqlalchemy import or_
 from app.models.department_model import Department
 from app.models.business_category_model import BusinessCategory
 from app.schemas.department_scehma import DepartmentCreate, DepartmentUpdate
+from sqlalchemy.orm import Session, joinedload  # ADDED: joinedload
 
 class DepartmentService:
     @staticmethod
@@ -18,8 +19,8 @@ class DepartmentService:
         is_active: Optional[bool] = None,
         search: Optional[str] = None
     ) -> List[Department]:
-        query = db.query(Department)
-        
+        # query = db.query(Department)
+        query = db.query(Department).options(joinedload(Department.business_category))
         if is_active is not None:
             query = query.filter(Department.is_active == is_active)
         
@@ -29,6 +30,7 @@ class DepartmentService:
                 or_(
                     Department.department_name.ilike(search_filter),
                     Department.department_description.ilike(search_filter),
+                    
                 )
             )
             
@@ -36,7 +38,13 @@ class DepartmentService:
 
     @staticmethod
     def get_department_by_id(db: Session, department_id: UUID) -> Department:
-        department = db.query(Department).filter(Department.department_id == department_id).first()
+        # department = db.query(Department).filter(Department.department_id == department_id).first()
+        department = (
+            db.query(Department)
+            .options(joinedload(Department.business_category))
+            .filter(Department.department_id == department_id)
+            .first()
+        )
         if not department:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,

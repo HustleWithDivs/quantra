@@ -348,6 +348,16 @@ export const getDepartmentTableColumns = ({ onEdit, onDelete }: DepartmentColumn
     render: (row) => <span className="fw-semibold text-primary">{row.department_name || ''}</span>,
   },
   {
+    key: 'business_category_name',
+    header: 'Business Category',
+    sortable: true,
+    render: (row) => (
+      <span className="text-dark fw-medium">
+        {row.business_category_name || '-'}
+      </span>
+    ),
+  },
+  {
     key: 'department_description',
     header: 'Description',
     sortable: false,
@@ -396,6 +406,17 @@ export const getCategoryTableColumns = ({ onEdit, onDelete }: CategoryColumnsCon
     header: 'Name',
     sortable: true,
     render: (row) => <span className="fw-semibold text-primary">{row.category_name || ''}</span>,
+  },
+  {
+    key: 'departments',
+    header: 'Department',
+    sortable: false,
+    render: (row) => {
+      const deptNames = row.departments && row.departments.length > 0
+        ? row.departments.map((d: any) => d.department_name || d).join(', ')
+        : '-';
+      return <span className="text-dark fw-medium">{deptNames}</span>;
+    },
   },
   {
     key: 'category_description',
@@ -449,6 +470,17 @@ export const getSubCategoryTableColumns = ({ onEdit, onDelete }: SubCategoryColu
     render: (row) => <span className="fw-semibold text-primary">{row.sub_category_name || ''}</span>,
   },
   {
+    key: 'category_names',
+    header: 'Category',
+    sortable: false,
+    render: (row) => {
+      const categoryText = row.category_names && row.category_names.length > 0
+        ? row.category_names.join(', ')
+        : '-';
+      return <span className="text-dark fw-medium">{categoryText}</span>;
+    },
+  },
+  {
     key: 'sub_category_description',
     header: 'Description',
     sortable: false,
@@ -497,6 +529,18 @@ export const getProductTypeTableColumns = ({ onEdit, onDelete }: ProductTypeColu
     header: 'Name',
     sortable: true,
     render: (row) => <span className="fw-semibold text-primary">{row.product_type || ''}</span>,
+  },
+  {
+    key: 'subcategory_names',
+    header: 'SubCategory',
+    sortable: false,
+    render: (row) => {
+      // Handles both subcategory_names array or string fallbacks
+      const subCategoryText = Array.isArray(row.subcategory_names) && row.subcategory_names.length > 0
+        ? row.subcategory_names.join(', ')
+        : '-';
+      return <span className="text-dark fw-medium">{subCategoryText}</span>;
+    },
   },
   {
     key: 'product_type_description',

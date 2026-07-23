@@ -1,8 +1,10 @@
 import { api } from './axiosInstance';
 import type { APIResponse } from '../utilities/APIResponse';
+import type { Department } from './departmentApi';
 
 export interface Category {
-  department_id: string | undefined;
+  departments?: Department[]; // Department objects returned from backend
+  department_ids?: string[];
   category_id: string;
   category_name: string;
   category_description: string;
@@ -14,7 +16,7 @@ export interface Category {
 export interface CategoryPayload {
   category_name: string;
   category_description: string;
-  department_id: string;
+  department_ids: string[]; // Correct payload attribute expected by backend
   is_active: boolean;
 }
 

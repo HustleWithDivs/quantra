@@ -7,7 +7,7 @@ from sqlalchemy import or_
 from app.models.sub_category_model import SubCategory, CategorySubCategory
 from app.models.category_model import Category
 from app.schemas.sub_category_schema import SubCategoryCreate, SubCategoryUpdate
-
+from sqlalchemy.orm import Session, joinedload
 
 class SubCategoryService:
     @staticmethod
@@ -18,8 +18,8 @@ class SubCategoryService:
         is_active: Optional[bool] = None,
         search: Optional[str] = None
     ) -> List[SubCategory]:
-        query = db.query(SubCategory)
-
+        # query = db.query(SubCategory)
+        query = db.query(SubCategory).options(joinedload(SubCategory.categories))
         if is_active is not None:
             query = query.filter(SubCategory.is_active == is_active)
 

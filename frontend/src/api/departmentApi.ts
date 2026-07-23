@@ -6,6 +6,7 @@ export interface Department {
   department_name: string;
   department_description: string;
   business_category_id: string;
+  business_category_name?: string; // ADDED: Display name for listing table
   is_active: boolean;
   created_at: string;
 }

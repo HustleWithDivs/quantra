@@ -13,8 +13,21 @@ class ProductTypeRead(BaseModel):
     created_by: Optional[UUID] = None
     modified_at: Optional[datetime] = None
     modified_by: Optional[UUID] = None
+    subcategories: List[UUID] = []
+    subcategory_names: List[str] = []
 
     model_config = ConfigDict(from_attributes=True)
+
+    @model_validator(mode="before")
+    @classmethod
+    def extract_subcategories(cls, data):
+        """Flattens SQLAlchemy model relations into UUIDs and name strings."""
+        if hasattr(data, "sub_categories") and data.sub_categories:
+            data_dict = {c.name: getattr(data, c.name) for c in data.__table__.columns}
+            data_dict["subcategories"] = [sc.sub_category_id for sc in data.sub_categories]
+            data_dict["subcategory_names"] = [sc.sub_category_name for sc in data.sub_categories]
+            return data_dict
+        return data
 
 
 class ProductTypeCreate(BaseModel):
@@ -37,16 +50,18 @@ class ProductTypeResponseData(BaseModel):
     product_type_description: Optional[str] = None
     is_active: bool
     created_at: datetime
-    sub_categories: List[UUID] = []
+    subcategories: List[UUID] = []
+    subcategory_names: List[str] = []
 
     model_config = ConfigDict(from_attributes=True)
 
     @model_validator(mode="before")
     @classmethod
     def flatten_sub_category_ids(cls, data):
-        """Flattens SQLAlchemy model relations into a pure array of UUID tokens."""
+        """Flattens SQLAlchemy model relations into pure arrays of UUIDs and names."""
         if hasattr(data, "sub_categories") and data.sub_categories:
             data_dict = {c.name: getattr(data, c.name) for c in data.__table__.columns}
-            data_dict["sub_categories"] = [sc.sub_category_id for sc in data.sub_categories]
+            data_dict["subcategories"] = [sc.sub_category_id for sc in data.sub_categories]
+            data_dict["subcategory_names"] = [sc.sub_category_name for sc in data.sub_categories]
             return data_dict
         return data

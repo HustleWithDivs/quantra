@@ -13,8 +13,23 @@ class SubCategoryRead(BaseModel):
     created_by: Optional[UUID] = None
     modified_at: Optional[datetime] = None
     modified_by: Optional[UUID] = None
+    category_names: List[str] = []
 
     model_config = ConfigDict(from_attributes=True)
+
+    @model_validator(mode="before")
+    @classmethod
+    def extract_category_names(cls, data):
+        """Extract category names from ORM relationship before serialization."""
+        if hasattr(data, "categories") and data.categories:
+            # Build dictionary of model columns
+            data_dict = {c.name: getattr(data, c.name) for c in data.__table__.columns}
+            # Extract category names from linked Category objects
+            data_dict["category_names"] = [
+                cat.category_name for cat in data.categories if hasattr(cat, "category_name")
+            ]
+            return data_dict
+        return data
 
 
 class SubCategoryCreate(BaseModel):

@@ -5,7 +5,8 @@ export interface ProductType {
   product_type_id: string;
   product_type: string;
   product_type_description: string;
-  sub_category_id: string;
+  subcategories?: string[];        // Array of UUIDs from backend
+  subcategory_names?: string[];
   is_active: boolean;
   created_at: string;
 }
@@ -13,7 +14,7 @@ export interface ProductType {
 export interface ProductTypePayload {
   product_type: string;
   product_type_description: string;
-  sub_category_id: string;
+  sub_category_ids: string[];
   is_active: boolean;
 }
 

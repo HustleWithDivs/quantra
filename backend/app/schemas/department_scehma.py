@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field
 class DepartmentRead(BaseModel):
     department_id: UUID
     business_category_id: UUID
+    business_category_name: Optional[str] = None  # ADDED: To expose display name to frontend
     department_name: str
     department_description: Optional[str] = None
     is_active: bool

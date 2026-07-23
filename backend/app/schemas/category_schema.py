@@ -2,11 +2,12 @@ from uuid import UUID
 from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel, ConfigDict, Field, model_validator
-
+from app.schemas.department_scehma import DepartmentRead
 class CategoryRead(BaseModel):
     category_id: UUID
     category_name: str
     category_description: Optional[str] = None
+    departments: Optional[List[DepartmentRead]] = []  # Exposed to frontend listing
     is_active: bool
     created_at: datetime
     created_by: Optional[UUID] = None
