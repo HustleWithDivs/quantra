@@ -8,6 +8,8 @@ import {
   BiGitBranch, 
   BiGroup, 
   BiChevronDown,
+  BiLineChart,
+
   
 } from 'react-icons/bi';
 import { FaUserAlt, FaUserShield, FaShieldAlt } from "react-icons/fa";
@@ -258,6 +260,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isExpanded }) => {
         <Nav.Link as={Link} to="/customer" className={`${getNavLinkClass('/customer')} w-100`}>
           <BiGroup className="fs-4 flex-shrink-0" />
           {isExpanded && <span className="ms-3 fw-medium">Customer</span>}
+        </Nav.Link>
+
+        {/* 5. Demand Forecasting */}
+        <Nav.Link as={Link} to="/demand-forecasting" className={`${getNavLinkClass('/demand-forecasting')} w-100`}>
+          <BiLineChart className="fs-4 flex-shrink-0" />
+          {isExpanded && <span className="ms-3 fw-medium">Demand Forecasting</span>}
         </Nav.Link>
 
         {/* 6. User Management Row */}
