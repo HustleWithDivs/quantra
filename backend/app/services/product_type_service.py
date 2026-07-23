@@ -7,7 +7,7 @@ from sqlalchemy import or_
 from app.models.product_type_model import ProductType
 from app.models.sub_category_model import SubCategory, SubCategoryProductType
 from app.schemas.product_type_schema import ProductTypeCreate, ProductTypeUpdate
-
+from sqlalchemy.orm import Session, joinedload
 
 class ProductTypeService:
     @staticmethod
@@ -18,8 +18,9 @@ class ProductTypeService:
         is_active: Optional[bool] = None,
         search: Optional[str] = None
     ) -> List[ProductType]:
-        query = db.query(ProductType)
-
+        # query = db.query(ProductType)
+        # Add options(joinedload(ProductType.sub_categories))
+        query = db.query(ProductType).options(joinedload(ProductType.sub_categories))
         if is_active is not None:
             query = query.filter(ProductType.is_active == is_active)
 

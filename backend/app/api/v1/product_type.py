@@ -16,7 +16,7 @@ router = APIRouter(prefix="/product-type", tags=["Product Type"])
 
 @router.get(
     "",
-    response_model=APIResponse[List[ProductTypeRead]],
+    response_model=APIResponse[List[ProductTypeResponseData]],
     status_code=status.HTTP_200_OK
 )
 def list_product_type(
@@ -31,7 +31,7 @@ def list_product_type(
         product_type_db = ProductTypeService.get_all_product_types(
             db=db, limit=limit, offset=offset, is_active=is_active, search=search
         )
-        product_type_data = [ProductTypeRead.model_validate(sc) for sc in product_type_db]
+        product_type_data = [ProductTypeResponseData.model_validate(sc) for sc in product_type_db]
         return APIResponse.success(code=200, message="Product Type retrieved successfully", data=product_type_data)
     except Exception as e:
         logger.error(f"Error handling product type query loop: {str(e)}")

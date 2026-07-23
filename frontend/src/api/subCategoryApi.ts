@@ -5,7 +5,8 @@ export interface SubCategory {
   sub_category_id: string;
   sub_category_name: string;
   sub_category_description: string;
-  category_id: string;
+ categories?: string[]; // Array of Category UUIDs returned from backend
+  category_names?: string[]; // Array of Category Name strings returned from backend
   is_active: boolean;
   created_at: string;
 }
@@ -13,7 +14,7 @@ export interface SubCategory {
 export interface SubCategoryPayload {
   sub_category_name: string;
   sub_category_description: string;
-  category_id: string;
+  category_ids: string[];
   is_active: boolean;
 }
 

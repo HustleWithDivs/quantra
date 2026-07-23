@@ -38,7 +38,7 @@ def list_categories(
 
 @router.get(
     "/{category_id}", 
-    response_model=APIResponse[CategoryResponseData],
+    response_model=APIResponse[CategoryRead],
     status_code=status.HTTP_200_OK
 )
 def get_category_details(

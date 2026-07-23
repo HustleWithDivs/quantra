@@ -7,7 +7,7 @@ from sqlalchemy import or_
 from app.models.category_model import Category
 from app.models.department_model import Department
 from app.schemas.category_schema import CategoryCreate, CategoryUpdate
-
+from sqlalchemy.orm import Session, joinedload
 class CategoryService:
     @staticmethod
     def get_all_categories(
@@ -17,8 +17,8 @@ class CategoryService:
         is_active: Optional[bool] = None,
         search: Optional[str] = None
     ) -> List[Category]:
-        query = db.query(Category)
-        
+        # query = db.query(Category)
+        query = db.query(Category).options(joinedload(Category.departments))
         if is_active is not None:
             query = query.filter(Category.is_active == is_active)
         
@@ -35,7 +35,7 @@ class CategoryService:
 
     @staticmethod
     def get_category_by_id(db: Session, category_id: UUID) -> Category:
-        category = db.query(Category).filter(Category.category_id == category_id).first()
+        category = db.query(Category).options(joinedload(Category.departments)).filter(Category.category_id == category_id).first()
         if not category:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,

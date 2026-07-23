@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import { productTypeApi, type ProductType } from '../../api/productTypeApi';
 import { useAuth } from '../../context/AuthContext';
@@ -25,8 +25,8 @@ export const useProductType = () => {
   const [productTypeToDelete, setProductTypeToDelete] = useState<ProductType | null>(null);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
-  // Read Directory Handler
-  const fetchProductType = async () => {
+  // Read Directory Handler wrapped in useCallback to avoid unnecessary re-fetches
+  const fetchProductType = useCallback(async () => {
     if (isAuthLoading || !accessToken) return;
     setIsLoading(true);
     try {
@@ -42,11 +42,11 @@ export const useProductType = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [accessToken, isAuthLoading, searchTerm]);
 
   useEffect(() => {
     fetchProductType();
-  }, [accessToken, isAuthLoading, searchTerm]);
+  }, [fetchProductType]);
 
   // Destructive Removal Operation Handler
   const handleExecuteDelete = async () => {
@@ -55,7 +55,7 @@ export const useProductType = () => {
     try {
       const res = await productTypeApi.deleteProductType(productTypeToDelete.product_type_id);
       if (res.requestStatus) {
-        toast.success(`ProductType profile "${productTypeToDelete.product_type || (productTypeToDelete as any).product_type}" has been deleted successfully.`);
+        toast.success(`ProductType profile "${productTypeToDelete.product_type}" has been deleted successfully.`);
         setConfirmDeleteOpen(false);
         setProductTypeToDelete(null);
         fetchProductType();
@@ -98,9 +98,7 @@ export const useProductType = () => {
     },
   };
 
-  // ==========================================
-  // HOOK EMBEDDED ACTION & COLUMNS COUPLING
-  // ==========================================
+  // Static Column Mapping with memoized callbacks
   const columns = useMemo(() => 
     getProductTypeTableColumns({
       onEdit: (row) => {
@@ -112,7 +110,7 @@ export const useProductType = () => {
         setConfirmDeleteOpen(true);
       },
     }),
-    [] // Keep static since handler dependencies map back inside internal engine scopes cleanly
+    []
   );
 
   return {
@@ -121,7 +119,7 @@ export const useProductType = () => {
     isLoading,
     isDeleting,
     tableController,
-    columns, // Passed clean to the UI layer
+    columns,
     formModalOpen,
     setFormModalOpen,
     selectedProductType,
