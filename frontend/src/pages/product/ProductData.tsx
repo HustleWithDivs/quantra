@@ -5,7 +5,7 @@ import { useProducts } from '../../hooks/product/useProducts';
 import { QuantraButton } from '../../components/reusable/QuantraButton';
 import { QuantraConfirmBox } from '../../components/reusable/QuantraConfirmBox';
 import { QuantraTable } from '../../components/reusable/QuantraTable';
-import { VariantModal } from './VariantModal';
+import { VariantModal } from '../../components/product/VariantModal';
 
 export const ProductData: React.FC = () => {
   const {

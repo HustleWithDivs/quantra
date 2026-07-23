@@ -7,7 +7,7 @@ from pydantic import BaseModel, EmailStr, ConfigDict ,Field
 class BrandRead(BaseModel):
     brand_id: UUID
     brand_name: str
-    description: str
+    description: Optional[str]=None
     is_active: bool
     created_at: datetime
     model_config = ConfigDict(from_attributes=True)
@@ -15,7 +15,7 @@ class BrandRead(BaseModel):
 class BrandResponseData(BaseModel):
     brand_id: UUID
     brand_name: str
-    description: str
+    description: Optional[str]=None
     is_active: bool
     created_at: datetime
     model_config = ConfigDict(from_attributes=True)    

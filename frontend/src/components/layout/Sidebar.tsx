@@ -249,9 +249,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isExpanded }) => {
         </Nav.Link>
 
         {/* 4. Source Mapping */}
-        <Nav.Link as={Link} to="/source-mapping" className={`${getNavLinkClass('/source-mapping')} w-100`}>
+        <Nav.Link as={Link} to="/import-data" className={`${getNavLinkClass('/import-data')} w-100`}>
           <BiGitBranch className="fs-4 flex-shrink-0" />
-          {isExpanded && <span className="ms-3 fw-medium">Source Mapping</span>}
+          {isExpanded && <span className="ms-3 fw-medium">Import Data</span>}
         </Nav.Link>
 
         {/* 5. Customer Data */}

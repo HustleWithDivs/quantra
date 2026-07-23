@@ -16,7 +16,7 @@ interface QuantraSelectProps<T extends FieldValues> {
   options: QunatraSelectOption[];
   isMulti?: boolean;
   error?: FieldError | Merge<FieldError, FieldErrorsImpl<any>>;
-  control: Control<T>;
+  control: Control<any>;
   placeholder?: string;
 }
 
@@ -29,7 +29,7 @@ export function QuantraSelectField<T extends FieldValues>({
   options,
   isMulti = false,
   error,
-  control,
+  control=null,
   placeholder = 'Select an option...',
 }: QuantraSelectProps<T>) {
   
