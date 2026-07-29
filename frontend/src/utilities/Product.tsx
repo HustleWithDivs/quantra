@@ -28,7 +28,7 @@ export const getProductTableColumns = ({ onEdit, onDelete, toggleExpand, isExpan
     key: 'sku',
     header: 'SKU Code',
     sortable: true,
-    render: (row) => <span className="fw-bold text-dark">{row.sku}</span>,
+    render: (row) => <span className="fw-bold">{row.sku}</span>,
   },
   {
     key: 'product_name',

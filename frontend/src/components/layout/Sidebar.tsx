@@ -2,11 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Nav, Collapse, Dropdown } from 'react-bootstrap';
 import { 
+  BiUserPin,
+  BiCloudUpload,
+  BiCube,
+  BiBarcode,
+  BiFolderOpen,
+  BiCategory,
+  BiBuilding,
+  BiBriefcase,
+  BiServer,
+  BiLayer,
+  BiSolidTruck,
+  BiBookmark,
   BiHomeAlt, 
-  BiBarChartSquare, 
-  BiPackage, 
-  BiGitBranch, 
-  BiGroup, 
+  BiSlider, 
   BiChevronDown,
   BiLineChart,
 
@@ -90,7 +99,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isExpanded }) => {
                 style={{ cursor: 'pointer' }}
               >
                 <div className="d-flex align-items-center">
-                  <FaUserShield className="fs-4 flex-shrink-0" />
+                  <BiServer className="fs-4 flex-shrink-0" />
                   <span className="ms-3 fw-medium">Master Data</span>
                 </div>
                 <BiChevronDown 
@@ -106,35 +115,35 @@ export const Sidebar: React.FC<SidebarProps> = ({ isExpanded }) => {
                 <div>
                   <div className="d-flex flex-column ms-3 border-start ps-2 mt-1">
                     <Nav.Link as={Link} to="/master-data/brand" className={getSubNavLinkClass('/master-data/brand')}>
-                      <FaUserAlt className="fs-5 flex-shrink-0 me-2" />
+                      <BiBookmark className="fs-5 flex-shrink-0 me-2" />
                       <span>Brand</span>
                     </Nav.Link>
                     <Nav.Link as={Link} to="/master-data/supplier" className={getSubNavLinkClass('/master-data/supplier')}>
-                      <FaShieldAlt className="fs-5 flex-shrink-0 me-2" />
+                      <BiSolidTruck className="fs-5 flex-shrink-0 me-2" />
                       <span>Supplier</span>
                     </Nav.Link>
                     <Nav.Link as={Link} to="/master-data/material" className={getSubNavLinkClass('/master-data/material')}>
-                      <FaShieldAlt className="fs-5 flex-shrink-0 me-2" />
+                      <BiLayer className="fs-5 flex-shrink-0 me-2" />
                       <span>Material</span>
                     </Nav.Link>
                     <Nav.Link as={Link} to="/master-data/business-category" className={getSubNavLinkClass('/master-data/business-category')}>
-                      <FaShieldAlt className="fs-5 flex-shrink-0 me-2" />
+                      <BiBriefcase className="fs-5 flex-shrink-0 me-2" />
                       <span>Business Category</span>
                     </Nav.Link>
                     <Nav.Link as={Link} to="/master-data/department" className={getSubNavLinkClass('/master-data/department')}>
-                      <FaShieldAlt className="fs-5 flex-shrink-0 me-2" />
+                      <BiBuilding className="fs-5 flex-shrink-0 me-2" />
                       <span>Department</span>
                     </Nav.Link>
                     <Nav.Link as={Link} to="/master-data/category" className={getSubNavLinkClass('/master-data/category')}>
-                      <FaShieldAlt className="fs-5 flex-shrink-0 me-2" />
+                      <BiCategory className="fs-5 flex-shrink-0 me-2" />
                       <span>Category</span>
                     </Nav.Link>
                     <Nav.Link as={Link} to="/master-data/sub-category" className={getSubNavLinkClass('/master-data/sub-category')}>
-                      <FaShieldAlt className="fs-5 flex-shrink-0 me-2" />
+                      <BiFolderOpen className="fs-5 flex-shrink-0 me-2" />
                       <span>Sub Category</span>
                     </Nav.Link>
                     <Nav.Link as={Link} to="/master-data/product-type" className={getSubNavLinkClass('/master-data/product-type')}>
-                      <FaShieldAlt className="fs-5 flex-shrink-0 me-2" />
+                      <BiBarcode className="fs-5 flex-shrink-0 me-2" />
                       <span>Product Type</span>
                     </Nav.Link>
                   </div>
@@ -150,7 +159,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isExpanded }) => {
                   masterMenuOpen ? 'bg-primary text-white' : 'text-body'
                 }`}
               >
-                <FaUserShield className="fs-4 flex-shrink-0" />
+                <BiServer className="fs-4 flex-shrink-0" />
                 {/* Visual Indicator: Mini chevron overlay signifying that hidden options exist */}
               
               </Dropdown.Toggle>
@@ -166,7 +175,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isExpanded }) => {
                     location.pathname === '/master-data/brand' ? 'bg-primary text-white' : 'text-body'
                   }`}
                 >
-                  <FaUserAlt className="fs-5 me-2 flex-shrink-0" />
+                  <BiBookmark className="fs-5 me-2 flex-shrink-0" />
                   <span>Brand</span>
                 </Dropdown.Item>
                 <Dropdown.Item 
@@ -176,7 +185,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isExpanded }) => {
                     location.pathname === '/master-data/supplier' ? 'bg-primary text-white' : 'text-body'
                   }`}
                 >
-                  <FaShieldAlt className="fs-5 me-2 flex-shrink-0" />
+                  <BiSolidTruck className="fs-5 me-2 flex-shrink-0" />
                   <span>Supplier</span>
                 </Dropdown.Item>
                 <Dropdown.Item 
@@ -186,7 +195,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isExpanded }) => {
                     location.pathname === '/master-data/material' ? 'bg-primary text-white' : 'text-body'
                   }`}
                 >
-                  <FaShieldAlt className="fs-5 me-2 flex-shrink-0" />
+                  <BiLayer className="fs-5 me-2 flex-shrink-0" />
                   <span>Material</span>
                 </Dropdown.Item>   
                 <Dropdown.Item 
@@ -196,7 +205,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isExpanded }) => {
                     location.pathname === '/master-data/business-category' ? 'bg-primary text-white' : 'text-body'
                   }`}
                 >
-                  <FaShieldAlt className="fs-5 me-2 flex-shrink-0" />
+                  <BiBriefcase className="fs-5 me-2 flex-shrink-0" />
                   <span>Business Category</span>
                 </Dropdown.Item>
                  <Dropdown.Item 
@@ -206,7 +215,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isExpanded }) => {
                     location.pathname === '/master-data/department' ? 'bg-primary text-white' : 'text-body'
                   }`}
                 >
-                  <FaShieldAlt className="fs-5 me-2 flex-shrink-0" />
+                  <BiBuilding className="fs-5 me-2 flex-shrink-0" />
                   <span>Department</span>
                 </Dropdown.Item>  
                 <Dropdown.Item 
@@ -216,7 +225,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isExpanded }) => {
                     location.pathname === '/master-data/category' ? 'bg-primary text-white' : 'text-body'
                   }`}
                 >
-                  <FaShieldAlt className="fs-5 me-2 flex-shrink-0" />
+                  <BiCategory className="fs-5 me-2 flex-shrink-0" />
                   <span>Category</span>
                 </Dropdown.Item>
                 <Dropdown.Item 
@@ -226,7 +235,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isExpanded }) => {
                     location.pathname === '/master-data/sub-category' ? 'bg-primary text-white' : 'text-body'
                   }`}
                 >
-                  <FaShieldAlt className="fs-5 me-2 flex-shrink-0" />
+                  <BiFolderOpen className="fs-5 me-2 flex-shrink-0" />
                   <span>Sub Category</span>
                 </Dropdown.Item> 
                  <Dropdown.Item 
@@ -236,7 +245,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isExpanded }) => {
                     location.pathname === '/master-data/product-type' ? 'bg-primary text-white' : 'text-body'
                   }`}
                 >
-                  <FaShieldAlt className="fs-5 me-2 flex-shrink-0" />
+                  <BiBarcode className="fs-5 me-2 flex-shrink-0" />
                   <span>Product Type</span>
                 </Dropdown.Item>           
               </Dropdown.Menu>
@@ -246,26 +255,30 @@ export const Sidebar: React.FC<SidebarProps> = ({ isExpanded }) => {
 
         {/* 3. Product Data */}
         <Nav.Link as={Link} to="/product-data" className={`${getNavLinkClass('/product-data')} w-100`}>
-          <BiPackage className="fs-4 flex-shrink-0" />
-          {isExpanded && <span className="ms-3 fw-medium">Product Data</span>}
+          <BiCube className="fs-4 flex-shrink-0" />
+          {isExpanded && <span className="ms-3 fw-medium">Product Catalog</span>}
         </Nav.Link>
 
         {/* 4. Source Mapping */}
         <Nav.Link as={Link} to="/import-data" className={`${getNavLinkClass('/import-data')} w-100`}>
-          <BiGitBranch className="fs-4 flex-shrink-0" />
-          {isExpanded && <span className="ms-3 fw-medium">Import Data</span>}
+          <BiCloudUpload className="fs-4 flex-shrink-0" />
+          {isExpanded && <span className="ms-3 fw-medium">Import Hub</span>}
         </Nav.Link>
 
         {/* 5. Customer Data */}
         <Nav.Link as={Link} to="/customer" className={`${getNavLinkClass('/customer')} w-100`}>
-          <BiGroup className="fs-4 flex-shrink-0" />
-          {isExpanded && <span className="ms-3 fw-medium">Customer</span>}
+          <BiUserPin className="fs-4 flex-shrink-0" />
+          {isExpanded && <span className="ms-3 fw-medium">Customers</span>}
         </Nav.Link>
 
         {/* 5. Demand Forecasting */}
         <Nav.Link as={Link} to="/demand-forecasting" className={`${getNavLinkClass('/demand-forecasting')} w-100`}>
           <BiLineChart className="fs-4 flex-shrink-0" />
           {isExpanded && <span className="ms-3 fw-medium">Demand Forecasting</span>}
+        </Nav.Link>
+         <Nav.Link as={Link} to="/what-if" className={`${getNavLinkClass('/what-if')} w-100`}>
+          <BiSlider className="fs-4 flex-shrink-0" />
+          {isExpanded && <span className="ms-3 fw-medium">Scenario Analysis</span>}
         </Nav.Link>
 
         {/* 6. User Management Row */}
