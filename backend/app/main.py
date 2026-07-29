@@ -1,7 +1,76 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from app.core.exceptions import setup_exception_handlers
+from app.core.database import engine, Base
+from app.models import forecasting_model
+from app.api.v1.auth import router as auth_router
+from app.api.v1.roles import router as roles_router
+from app.api.v1.permissions import router as permissions_router
+from app.api.v1.users import router as users_router
+from app.api.v1.brand import router as brand_router
+from app.api.v1.supplier import router as supplier_router
+from app.api.v1.color import router as color_router
+from app.api.v1.size import router as size_router
+from app.api.v1.business_category import router as business_category_router
+from app.api.v1.department import router as department_router
+from app.api.v1.category import router as category_router  
+from app.api.v1.sub_category import router as sub_category_router  
+from app.api.v1.product_type import router as product_type_router
+from app.api.v1.material import router as material 
+from app.api.v1.product import router as product_router  
+from app.api.v1.bulk_ingestion import router as bulk_ingestion_router
+from app.api.v1.customer_order import router as  customer_order_router
+from app.api.v1.forecasting import router as forecasting_router
+from app.api.v1.simulator import router as simulator_router
+from app.api.v1.dashboard import router as dashboard_router
+from fastapi.staticfiles import StaticFiles
+import os
+# Auto-generate database tables on startup
+Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Agentic AI Backend Workspace")
+# Initialize the Quantra Core Engine
+app = FastAPI(
+    title="Quantra API",
+    description="Enterprise Access Control Kernel & Autonomous Operations Platform for Quantra",
+    version="1.0.0"
+)
+@app.on_event("startup")
+def configure_analytical_schemas():
+    # Automatically tracks metadata hooks and initializes missing columns/tables
+    forecasting_model.Base.metadata.create_all(bind=engine)
+os.makedirs(os.path.join("static", "uploads", "products"), exist_ok=True)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+setup_exception_handlers(app)
+app.include_router(auth_router, prefix="/api/v1")
+app.include_router(users_router, prefix="/api/v1")
+app.include_router(roles_router, prefix="/api/v1")
+app.include_router(permissions_router, prefix="/api/v1")
+app.include_router(brand_router, prefix="/api/v1")
+app.include_router(supplier_router, prefix="/api/v1")
+app.include_router(color_router, prefix="/api/v1")
+app.include_router(size_router, prefix="/api/v1")
+app.include_router(business_category_router, prefix="/api/v1")
+app.include_router(department_router,prefix="/api/v1")
+app.include_router(category_router,prefix="/api/v1")
+app.include_router(sub_category_router,prefix="/api/v1")
+app.include_router(product_type_router, prefix="/api/v1")
+app.include_router(material,prefix="/api/v1")
+app.include_router(product_router,prefix="/api/v1")
+app.include_router(bulk_ingestion_router, prefix=("/api/v1"))
+app.include_router(customer_order_router, prefix=("/api/v1"))
+app.include_router(forecasting_router, prefix=("/api/v1"))
+app.include_router(simulator_router, prefix=("/api/v1"))
+app.include_router(dashboard_router, prefix=("/api/v1"))
 
-@app.get("/")
-def read_root():
-    return {"status": "online", "message": "Agent System Initialized"}
+
+
+@app.get("/", tags=["Root"])
+def root_status():
+    return {"status": "online", "system": "Quantra API Gateway"}

@@ -7,10 +7,30 @@ import Sidebar from './Sidebar';
 
 // 1. Lazy load your components right here inside the layout module
 const Dashboard = lazy(() => import('../../pages/Dashboard'));
-const MasterData = lazy(() => import('../../pages/MasterData'));
-const ProductData = lazy(() => import('../../pages/ProductData'));
+const BulkImportData = lazy(() => import('../../pages/import-data/BulkIngestionPage'));
+const ImportData = lazy(() => import('../../pages/import-data/MappingListPage'));
+
+const Brand = lazy(() => import('../../pages/master-data/brand'));
+const Supplier = lazy(() => import('../../pages/master-data/supplier'));
+const Material = lazy(() => import('../../pages/master-data/material'));
+const BusinessCategory = lazy(() => import('../../pages/master-data/business-category'));
+const Department = lazy(() => import('../../pages/master-data/department'));
+const ProductData = lazy(() => import('../../pages/product/ProductData'));
+const Category = lazy(() => import('../../pages/master-data/category'));
+const SubCategory = lazy(() => import('../../pages/master-data/sub-category'));
+const ProductType = lazy(() => import('../../pages/master-data/product-type'));
+const ProductWizardPage = lazy(() => import('../../pages/product/ProductWizardPage'));
+const DemandForecasting = lazy(()=> import('../../pages/DemandForecasting'))
 const Customer = lazy(() => import('../../pages/Customer'));
-const UserManagement = lazy(() => import('../../pages/UserManagement'));
+const Users = lazy(() => import('../../pages/user-management/Users'));
+const Roles = lazy(() => import('../../pages/user-management/Roles'));
+const Settings = lazy(() => import('../../pages/Settings'));
+const WhatIfSimulator = lazy(()=>import('../../pages/WhatIfSimulator'));
+const QuantraButtonExample = lazy(()=>import('../../pages/examples/QuantraButtonExample'))
+const QuantraInputFieldExample = lazy(()=>import('../../pages/examples/QuantraInputFieldExample'))
+const QuantraTableExample = lazy(()=>import('../../pages/examples/QuantraTableExample'))
+const QuantraModalExample = lazy(()=>import('../../pages/examples/QuantraModalExample'))
+const QuantraWidgetExample = lazy(()=>import('../../pages/examples/QuantraWidgetExample'))
 
 // Centralized UI loading indicator fallback
 const PageLoader =() =>(
@@ -44,10 +64,29 @@ const PageLayout=({theme,setTheme}) =>{
               <Routes>
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/master-data" element={<MasterData />} />
+                <Route path="/master-data/brand" element={<Brand />} />
+                <Route path="/master-data/supplier" element={<Supplier />} />
+                <Route path="/master-data/material" element={<Material />} />
+                <Route path="/master-data/business-category" element={<BusinessCategory />} />
+                <Route path="/master-data/Department" element={<Department />} />
+                <Route path="/master-data/category" element={<Category />} />
+                <Route path="/master-data/sub-category" element={<SubCategory />} />
+                <Route path="/master-data/product-type" element={<ProductType />} />
                 <Route path="/product-data" element={<ProductData />} />
+                <Route path="/bulk-import" element={<BulkImportData/>}/>
+                <Route path="/import-data" element={<ImportData/>} />
+                <Route path="/product-data/manage" element={<ProductWizardPage />} />
                 <Route path="/customer" element={<Customer />} />
-                <Route path="/user-management" element={<UserManagement />} />
+                <Route path="/user-management/users" element={<Users />} />
+                <Route path="/user-management/roles" element={<Roles />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/what-if" element={<WhatIfSimulator/>}/>
+                <Route path="/demand-forecasting" element={<DemandForecasting/>}/>
+                <Route path="/button-example" element={<QuantraButtonExample />} />
+                <Route path="/input-example" element={<QuantraInputFieldExample />} />
+                <Route path="/table-example" element={<QuantraTableExample />} />
+                <Route path="/modal-example" element={<QuantraModalExample />} />
+                <Route path="/widget-example" element={<QuantraWidgetExample />} />
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>
             </Suspense>
