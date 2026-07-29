@@ -1,20 +1,28 @@
-import { useState, useEffect, useMemo } from 'react';
+// src/hooks/product/useProducts.ts
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { productApi, type Product, type ProductVariant } from '../../api/productApi';
 import { getProductTableColumns } from '../../utilities/Product';
+
+const PAGE_SIZE = 10;
 
 export const useProducts = () => {
   const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [totalItems, setTotalItems] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  
+  // Controller states
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [sortKey, setSortKey] = useState<string>('sku');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
+  // Variant Modal & Expansion Contexts
   const [variantModalOpen, setVariantModalOpen] = useState<boolean>(false);
   const [activeParentProductId, setActiveParentProductId] = useState<string>('');
   const [selectedVariantContext, setSelectedVariantContext] = useState<ProductVariant | null>(null);
-  // Expander Trackers
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
 
   // Removal Modals Context States
@@ -22,7 +30,8 @@ export const useProducts = () => {
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
-  const fetchProducts = async () => {
+  // Fetch products with search parameter
+  const fetchProducts = useCallback(async () => {
     setIsLoading(true);
     try {
       const res = await productApi.listProducts(searchTerm || undefined);
@@ -31,16 +40,18 @@ export const useProducts = () => {
         setTotalItems(res.data.length);
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.message || 'Failed to compile catalogs.');
+      toast.error(err.response?.data?.message || 'Failed to fetch catalog products.');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [searchTerm]);
 
-  useEffect(() => { fetchProducts(); }, [searchTerm, currentPage]);
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts, currentPage]);
 
   const toggleRowExpansion = (productId: string) => {
-    setExpandedRows(prev => ({ ...prev, [productId]: !prev[productId] }));
+    setExpandedRows((prev) => ({ ...prev, [productId]: !prev[productId] }));
   };
 
   const handleExecuteDelete = async () => {
@@ -54,7 +65,7 @@ export const useProducts = () => {
         fetchProducts();
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.detail || 'Transaction contextual failure.');
+      toast.error(err.response?.data?.detail || 'Transaction failure.');
     } finally {
       setIsDeleting(false);
     }
@@ -69,19 +80,55 @@ export const useProducts = () => {
         fetchProducts();
       }
     } catch (err: any) {
-      toast.error(err.response?.data?.detail || "Failed to drop target variant options node.");
+      toast.error(err.response?.data?.detail || "Failed to drop target variant option node.");
     }
   };
 
-  const columns = useMemo(() => 
-    getProductTableColumns({
-      onEdit: (row) => navigate(`/product-data/manage?id=${row.product_id}`),
-      onDelete: (row) => { setProductToDelete(row); setConfirmDeleteOpen(true); },
-      toggleExpand: (row) => toggleRowExpansion(row.product_id),
-      isExpanded: (row) => !!expandedRows[row.product_id]
-    }), [expandedRows, navigate]
+  // Pagination calculations
+  const totalPages = useMemo(() => Math.ceil(totalItems / PAGE_SIZE) || 1, [totalItems]);
+  const paginationRange = useMemo(() => {
+    const range: (number | string)[] = [];
+    for (let i = 1; i <= totalPages; i++) range.push(i);
+    return range;
+  }, [totalPages]);
+
+  // Construct functional tableController
+  const tableController = {
+    currentPage,
+    searchTerm,
+    sortKey,
+    sortDirection,
+    totalPages,
+    paginationRange,
+    handleSearchChange: (query: string) => {
+      setSearchTerm(query);
+      setCurrentPage(1); // Reset page on new search
+    },
+    handleSortChange: (key: string) => {
+      const isAsc = sortKey === key && sortDirection === 'asc';
+      setSortDirection(isAsc ? 'desc' : 'asc');
+      setSortKey(key);
+    },
+    handlePageChange: (pageNumber: number) => {
+      setCurrentPage(pageNumber);
+    },
+  };
+
+  const columns = useMemo(
+    () =>
+      getProductTableColumns({
+        onEdit: (row) => navigate(`/product-data/manage?id=${row.product_id}`),
+        onDelete: (row) => {
+          setProductToDelete(row);
+          setConfirmDeleteOpen(true);
+        },
+        toggleExpand: (row) => toggleRowExpansion(row.product_id),
+        isExpanded: (row) => !!expandedRows[row.product_id],
+      }),
+    [expandedRows, navigate]
   );
-const openCreateVariantModal = (productId: string) => {
+
+  const openCreateVariantModal = (productId: string) => {
     setActiveParentProductId(productId);
     setSelectedVariantContext(null);
     setVariantModalOpen(true);
@@ -92,17 +139,14 @@ const openCreateVariantModal = (productId: string) => {
     setSelectedVariantContext(variant);
     setVariantModalOpen(true);
   };
+
   return {
     products,
     totalItems,
     isLoading,
     isDeleting,
-    searchTerm,
-    setSearchTerm,
-    currentPage,
-    setCurrentPage,
+    tableController, // <--- Pass the active table controller
     columns,
-    formModalOpen: false,
     confirmDeleteOpen,
     setConfirmDeleteOpen,
     productToDelete,
@@ -117,6 +161,6 @@ const openCreateVariantModal = (productId: string) => {
     activeParentProductId,
     selectedVariantContext,
     openCreateVariantModal,
-    openEditVariantModal
+    openEditVariantModal,
   };
 };

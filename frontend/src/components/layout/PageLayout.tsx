@@ -25,6 +25,7 @@ const Customer = lazy(() => import('../../pages/Customer'));
 const Users = lazy(() => import('../../pages/user-management/Users'));
 const Roles = lazy(() => import('../../pages/user-management/Roles'));
 const Settings = lazy(() => import('../../pages/Settings'));
+const WhatIfSimulator = lazy(()=>import('../../pages/WhatIfSimulator'));
 const QuantraButtonExample = lazy(()=>import('../../pages/examples/QuantraButtonExample'))
 const QuantraInputFieldExample = lazy(()=>import('../../pages/examples/QuantraInputFieldExample'))
 const QuantraTableExample = lazy(()=>import('../../pages/examples/QuantraTableExample'))
@@ -79,6 +80,7 @@ const PageLayout=({theme,setTheme}) =>{
                 <Route path="/user-management/users" element={<Users />} />
                 <Route path="/user-management/roles" element={<Roles />} />
                 <Route path="/settings" element={<Settings />} />
+                <Route path="/what-if" element={<WhatIfSimulator/>}/>
                 <Route path="/demand-forecasting" element={<DemandForecasting/>}/>
                 <Route path="/button-example" element={<QuantraButtonExample />} />
                 <Route path="/input-example" element={<QuantraInputFieldExample />} />

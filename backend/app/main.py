@@ -21,6 +21,8 @@ from app.api.v1.product import router as product_router
 from app.api.v1.bulk_ingestion import router as bulk_ingestion_router
 from app.api.v1.customer_order import router as  customer_order_router
 from app.api.v1.forecasting import router as forecasting_router
+from app.api.v1.simulator import router as simulator_router
+from app.api.v1.dashboard import router as dashboard_router
 from fastapi.staticfiles import StaticFiles
 import os
 # Auto-generate database tables on startup
@@ -64,6 +66,8 @@ app.include_router(product_router,prefix="/api/v1")
 app.include_router(bulk_ingestion_router, prefix=("/api/v1"))
 app.include_router(customer_order_router, prefix=("/api/v1"))
 app.include_router(forecasting_router, prefix=("/api/v1"))
+app.include_router(simulator_router, prefix=("/api/v1"))
+app.include_router(dashboard_router, prefix=("/api/v1"))
 
 
 

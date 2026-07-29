@@ -1,118 +1,96 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
-import { api } from '../../api/axiosInstance';
-import { forecastingApi, type ForecastDayPayload } from '../../api/forecastingApi';
-import type { QunatraSelectOption } from '../../components/reusable/QuantraSelectField';
-
-export const HorizonOptions: QunatraSelectOption[] = [
-  { value: '7', label: '7 Days' },
-  { value: '15', label: '15 Days' },
-  { value: '30', label: '30 Days' },
-  { value: '60', label: '60 Days' },
-  { value: '90', label: '90 Days' }
-];
-
-export const LevelOptions: QunatraSelectOption[] = [
-  { value: 'overall', label: 'Overall System Scope' },
-  { value: 'brand', label: 'Brand Matrix' },
-  { value: 'category', label: 'Category Node' },
-  { value: 'subcategory', label: 'Sub-Category Segment' },
-  { value: 'product', label: 'Individual Product SKU' }
-];
+import {
+  demandForecastingApi,
+  type OptionItem,
+  type ForecastData,
+} from '../../api/demandForecastingApi';
 
 export const useDemandForecasting = () => {
-  const [dynamicOptions, setDynamicOptions] = useState<QunatraSelectOption[]>([]);
-  const [chartData, setChartData] = useState<ForecastDayPayload[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [level, setLevel] = useState<string>('overall');
+  const [selectionUuid, setSelectionUuid] = useState<string>('');
+  const [options, setOptions] = useState<OptionItem[]>([]);
+  
+  const [loadingOptions, setLoadingOptions] = useState<boolean>(false);
+  const [data, setData] = useState<ForecastData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [generating, setGenerating] = useState<boolean>(false);
 
-  const { register, handleSubmit, control, watch, setValue, formState: { errors } } = useForm({
-    defaultValues: {
-      level: 'overall',
-      selection_uuid: '',
-      horizon: '15'
-    }
-  });
-
-  const watchLevel = watch('level');
-
-  // Reactive secondary listing lifecycle rules
+  // Load level dropdown options
   useEffect(() => {
-    setValue('selection_uuid', '');
-    setDynamicOptions([]);
-
-    if (!watchLevel || watchLevel === 'overall') return;
-
-    setIsLoading(true);
-    let targetEndpoint = '';
-
-    switch (watchLevel) {
-      case 'brand': targetEndpoint = '/brand'; break;
-      case 'category': targetEndpoint = '/category'; break;
-      case 'subcategory': targetEndpoint = '/sub-category'; break;
-      case 'product': targetEndpoint = '/products'; break;
-      default: setIsLoading(false); return;
-    }
-
-    api.get(targetEndpoint)
-      .then((res) => {
-        const rawData = res.data.data || res.data || [];
-        const options = rawData.map((item: any) => {
-          if (watchLevel === 'brand') return { value: item.brand_id, label: item.brand_name };
-          if (watchLevel === 'category') return { value: item.category_id, label: item.category_name };
-          if (watchLevel === 'subcategory') return { value: item.sub_category_id, label: item.sub_category_name };
-          if (watchLevel === 'product') return { value: item.product_id, label: `${item.product_name} (${item.sku})` };
-          return null;
-        }).filter(Boolean);
-        setDynamicOptions(options);
-      })
-      .catch(() => toast.error(`Failed to gather lookup array for level: ${watchLevel}`))
-      .finally(() => setIsLoading(false));
-  }, [watchLevel, setValue]);
-
-  const handleExecuteForecast = async (formData: any) => {
-    if (formData.level !== 'overall' && !formData.selection_uuid) {
-      toast.warning('Please target a listing value mapping for the active structural scale.');
+    if (level === 'overall') {
+      setSelectionUuid('');
+      setOptions([]);
       return;
     }
 
-    setIsGenerating(true);
-    try {
-      const res = await forecastingApi.generateForecast({
-        level: formData.level === 'brand' ? 'brand' : formData.level, // API Taxonomy map normalization
-        selection_uuid: formData.level === 'overall' ? null : formData.selection_uuid,
-        days_to_predict: parseInt(formData.horizon, 10)
-      });
+    const fetchLevelOptions = async () => {
+      setLoadingOptions(true);
+      try {
+        const items = await demandForecastingApi.getLevelOptions(level);
+        setOptions(items);
 
-      if (res.requestStatus && res.data) {
-        // Map timestamps into readable frontend chart expressions
-        const formattedData = res.data.values.map((v) => ({
-          forecast_date: new Date(v.forecast_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
-          predicted_quantity: parseFloat(v.predicted_quantity.toFixed(2))
-        }));
-        setChartData(formattedData);
-        toast.success(res.message || 'Analytical baseline matrices rendered.');
-      } else {
-        toast.error(res.message || 'The server rejected parameter calculations.');
+        if (items.length > 0) {
+          setSelectionUuid(items[0].id);
+        } else {
+          setSelectionUuid('');
+        }
+      } catch (err) {
+        toast.error(`Failed to load ${level} list.`);
+        setOptions([]);
+        setSelectionUuid('');
+      } finally {
+        setLoadingOptions(false);
       }
-    } catch (err: any) {
-      toast.error(err.response?.data?.detail || 'Execution timeout.');
+    };
+
+    fetchLevelOptions();
+  }, [level]);
+
+  // Fetch or trigger forecast generation
+  const fetchForecast = useCallback(async () => {
+    if (level !== 'overall' && !selectionUuid) return;
+
+    setLoading(true);
+    try {
+      const forecastResult = await demandForecastingApi.getLatestForecast(level, selectionUuid);
+      setData(forecastResult);
+    } catch (err) {
+      toast.info(`No forecast found for selected ${level}. Generating new forecast...`);
+      await handleGenerateForecast();
     } finally {
-      setIsGenerating(false);
+      setLoading(false);
+    }
+  }, [level, selectionUuid]);
+
+  useEffect(() => {
+    fetchForecast();
+  }, [fetchForecast]);
+
+  const handleGenerateForecast = async () => {
+    setGenerating(true);
+    try {
+      const forecastResult = await demandForecastingApi.generateForecast(level, selectionUuid);
+      setData(forecastResult);
+      toast.success('Forecast generated successfully!');
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || 'Failed to generate forecast.');
+    } finally {
+      setGenerating(false);
     }
   };
 
   return {
-    register,
-    handleSubmit,
-    control,
-    watchLevel,
-    dynamicOptions,
-    chartData,
-    isLoading,
-    isGenerating,
-    handleExecuteForecast,
-    errors
+    level,
+    setLevel,
+    selectionUuid,
+    setSelectionUuid,
+    options,
+    loadingOptions,
+    data,
+    loading,
+    generating,
+    handleGenerateForecast,
+    fetchForecast,
   };
 };
