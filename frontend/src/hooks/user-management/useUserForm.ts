@@ -16,9 +16,9 @@ interface UseUserFormProps {
 
 // Validation schema updated for single-role mandate
 const userValidationSchema = yup.object().shape({
-  first_name: yup.string().required('First name identifier is required'),
-  last_name: yup.string().required('Last name identifier is required'),
-  email: yup.string().email('Invalid email address configuration structure').required('User contact login email is required'),
+  first_name: yup.string().trim().required('First name identifier is required'),
+  last_name: yup.string().trim().required('Last name identifier is required'),
+  email: yup.string().trim().email('Invalid email address configuration structure').required('User contact login email is required'),
   gender: yup.string().max(1).required('Gender selection parameter is required'),
   is_active: yup.boolean().default(true),
   role_id: yup.string().required('An account security role assignment is mandatory'), // Single string validation rule
