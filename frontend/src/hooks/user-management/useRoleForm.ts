@@ -23,8 +23,8 @@ export interface GroupedPermission {
 }
 
 const roleValidationSchema = yup.object().shape({
-  role_name: yup.string().required('Role name tracking reference identifier is required'),
-  description: yup.string().required('Description parameters required'),
+  role_name: yup.string().trim().required('Role name tracking reference identifier is required'),
+  description: yup.string().trim().required('Description parameters required'),
   is_active: yup.boolean().default(true),
 });
 
