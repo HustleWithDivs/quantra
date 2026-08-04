@@ -189,6 +189,7 @@ export const ProductWizardPage: React.FC = () => {
                   </Tab>
 
                   {/* --- TAB 3: VISUALS & VARIANTS --- */}
+                  {!isEditMode &&
                   <Tab 
                     eventKey="variants" 
                     disabled={isEditMode}
@@ -225,6 +226,7 @@ export const ProductWizardPage: React.FC = () => {
                       </Col>
                     </Row>
                   </Tab>
+}
                 </Tabs>
 
                 {/* --- CENTRALIZED FORM SUBMISSION FOOTER ACTION TRAIL --- */}
