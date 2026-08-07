@@ -1,5 +1,5 @@
 from uuid import UUID
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_
@@ -16,7 +16,7 @@ class BrandService:
          offset: int = 0,
          is_active: Optional[bool] = None,
           search: Optional[str] = None
-        ) -> List[Brand]:
+        ) -> Tuple[List[Brand], int]:
         query = db.query(Brand)
 
         if is_active is not None:
@@ -31,8 +31,9 @@ class BrandService:
                     Brand.description.ilike(search_filter),
                )
             )
-            
-        return query.order_by(Brand.created_at.desc()).offset(offset).limit(limit).all()
+        total_count = query.count()
+        items= query.order_by(Brand.created_at.desc()).offset(offset).limit(limit).all()
+        return items, total_count
 
     @staticmethod
     def get_brand_by_id(db: Session, brand_id: UUID) -> Brand:

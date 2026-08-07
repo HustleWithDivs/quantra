@@ -1,5 +1,5 @@
 import { api } from './axiosInstance';
-import type { APIResponse } from '../utilities/APIResponse';
+import type { APIResponse, PaginatedResult } from '../utilities/APIResponse';
 
 export interface Material {
   material_id: string;
@@ -17,8 +17,8 @@ export interface MaterialPayload {
 
 
 export const materialApi = {
-  listMaterial: async (search?: string): Promise<APIResponse<Material[]>> => {
-    const response = await api.get('/material', { params: { search } });
+  listMaterial: async (search?: string, limit?:number,offset?:number): Promise<APIResponse<PaginatedResult<Material>>> => {
+    const response = await api.get('/material', { params: { search, limit, offset } });
     return response.data;
   },
 

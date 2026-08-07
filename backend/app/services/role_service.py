@@ -1,7 +1,7 @@
 from uuid import UUID
 from datetime import datetime
 from fastapi import HTTPException, status
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from sqlalchemy.orm import Session
 from app.models.role_model import Role, RolePermission
 from app.models.permission_model import Permission # Assuming this exists
@@ -15,7 +15,7 @@ class RoleService:
         offset: int = 0, 
         is_active: Optional[bool] = None,
         search: Optional[str] = None
-    ) -> List[Role]:
+    ) -> Tuple[List[Role], int]:
         """
         Business logic for retrieving a flat list of system roles.
         """
@@ -27,7 +27,10 @@ class RoleService:
         if search:
             query = query.filter(Role.role_name.ilike(f"%{search}%"))
             
-        return query.order_by(Role.role_id.asc()).offset(offset).limit(limit).all()
+        total_count = query.count()
+        items = query.order_by(Role.role_id.asc()).offset(offset).limit(limit).all()
+        return items, total_count
+
 
     @staticmethod
     def create_role_with_permissions(db: Session, role_in: RoleCreate, current_user_id: Optional[UUID] = None) -> Role:

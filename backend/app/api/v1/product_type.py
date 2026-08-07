@@ -4,7 +4,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, Query, status, HTTPException
 from sqlalchemy.orm import Session
 from app.models.user_model import User
-from app.schemas.response_schema import APIResponse
+from app.schemas.response_schema import APIResponse,PaginatedResponse
 from app.schemas.product_type_schema import ProductTypeCreate,ProductTypeRead, ProductTypeResponseData, ProductTypeUpdate
 from app.services.product_type_service import ProductTypeService
 from app.core.database import get_db
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/product-type", tags=["Product Type"])
 
 @router.get(
     "",
-    response_model=APIResponse[List[ProductTypeResponseData]],
+    response_model=APIResponse[PaginatedResponse[ProductTypeResponseData]],
     status_code=status.HTTP_200_OK
 )
 def list_product_type(
@@ -28,11 +28,17 @@ def list_product_type(
     current_user: User = Depends(PermissionChecker("product_type:view_product_type"))
 ):
     try:
-        product_type_db = ProductTypeService.get_all_product_types(
+        product_type_db, total_count = ProductTypeService.get_all_product_types(
             db=db, limit=limit, offset=offset, is_active=is_active, search=search
         )
         product_type_data = [ProductTypeResponseData.model_validate(sc) for sc in product_type_db]
-        return APIResponse.success(code=200, message="Product Type retrieved successfully", data=product_type_data)
+        paginated_data = {
+            "items": product_type_data,
+            "total": total_count,
+            "limit": limit,
+            "offset": offset
+        }
+        return APIResponse.success(code=200, message="Product Type retrieved successfully", data=paginated_data)
     except Exception as e:
         logger.error(f"Error handling product type query loop: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal processing fault.")

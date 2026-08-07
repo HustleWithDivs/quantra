@@ -1,5 +1,5 @@
 import { api } from './axiosInstance';
-import type { APIResponse } from '../utilities/APIResponse';
+import type { APIResponse, PaginatedResult } from '../utilities/APIResponse';
 
 export interface Supplier {
   supplier_id: string;
@@ -35,8 +35,8 @@ export interface SupplierPayload {
 
 
 export const supplierApi = {
-  listSupplier: async (search?: string): Promise<APIResponse<Supplier[]>> => {
-    const response = await api.get('/supplier', { params: { search } });
+  listSupplier: async (search?: string,limit?:number,offset?:number): Promise<APIResponse<PaginatedResult<Supplier>>> => {
+    const response = await api.get('/supplier', { params: { search, limit, offset } });
     return response.data;
   },
 

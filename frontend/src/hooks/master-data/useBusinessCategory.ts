@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 import { businessCategoryApi, type BusinessCategory } from '../../api/businessCategoryApi';
 import { useAuth } from '../../context/AuthContext';
 import { getBusinessCategoryTableColumns } from '../../utilities/Master';
+import { PAGE_SIZE } from '../../utilities/Pagination';
 
 export const useBusinessCategory = () => {
   const { accessToken, isLoading: isAuthLoading } = useAuth();
@@ -30,10 +31,11 @@ export const useBusinessCategory = () => {
     if (isAuthLoading || !accessToken) return;
     setIsLoading(true);
     try {
-      const res = await businessCategoryApi.listBusinessCategory(searchTerm || undefined);
+      let offset=(currentPage - 1) * PAGE_SIZE
+      const res = await businessCategoryApi.listBusinessCategory(searchTerm || undefined, PAGE_SIZE, offset);
       if (res.requestStatus) {
-        setBusinessCategory(res.data || []);
-        setTotalItems(res.data?.length || 0);
+        setBusinessCategory(res.data?.items || []);
+        setTotalItems(res.data?.total || 0);
       } else {
         toast.error(res.message || 'An error occurred while fetching role definitions.');
       }
@@ -70,7 +72,7 @@ export const useBusinessCategory = () => {
   };
 
   // Reusable QuantraTable Controller Properties
-  const totalPages = useMemo(() => Math.ceil(totalItems / 10) || 1, [totalItems]);
+  const totalPages = useMemo(() => Math.ceil(totalItems / PAGE_SIZE) || 1, [totalItems]);
   const paginationRange = useMemo(() => {
     const range: (number | string)[] = [];
     for (let i = 1; i <= totalPages; i++) range.push(i);

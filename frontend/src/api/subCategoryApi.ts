@@ -1,5 +1,5 @@
 import { api } from './axiosInstance';
-import type { APIResponse } from '../utilities/APIResponse';
+import type { APIResponse,PaginatedResult } from '../utilities/APIResponse';
 
 export interface SubCategory {
   sub_category_id: string;
@@ -20,8 +20,8 @@ export interface SubCategoryPayload {
 
 
 export const subCategoryApi = {
-  listSubCategory: async (search?: string): Promise<APIResponse<SubCategory[]>> => {
-    const response = await api.get('/sub-category', { params: { search } });
+  listSubCategory: async (search?: string, limit?:number,offset?:number): Promise<APIResponse<PaginatedResult<SubCategory>>> => {
+    const response = await api.get('/sub-category', { params: { search, limit, offset } });
     return response.data;
   },
 

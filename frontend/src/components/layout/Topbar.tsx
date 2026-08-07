@@ -65,11 +65,7 @@ export const Topbar: React.FC<TopbarProps> = ({ theme, setTheme, onToggleSidebar
                 <BiCog className="me-2 text-secondary" /> Settings Profile
               </NavDropdown.Item>
 
-              <NavDropdown.Item href="/button-example">Button Example</NavDropdown.Item>
-              <NavDropdown.Item href="/input-example">Input Example</NavDropdown.Item>
-              <NavDropdown.Item href="/table-example">Table Example</NavDropdown.Item>
-              <NavDropdown.Item href="/modal-example">Modal Example</NavDropdown.Item>
-              <NavDropdown.Item href="/widget-example">Widget Example</NavDropdown.Item>
+              
               
               <NavDropdown.Divider />
               

@@ -1,7 +1,7 @@
 from uuid import UUID
 from datetime import datetime
 from fastapi import HTTPException, status
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from app.models.product_type_model import ProductType
@@ -17,7 +17,7 @@ class ProductTypeService:
         offset: int = 0,
         is_active: Optional[bool] = None,
         search: Optional[str] = None
-    ) -> List[ProductType]:
+    ) -> Tuple[List[ProductType], int]:
         # query = db.query(ProductType)
         # Add options(joinedload(ProductType.sub_categories))
         query = db.query(ProductType).options(joinedload(ProductType.sub_categories))
@@ -33,7 +33,9 @@ class ProductTypeService:
                 )
             )
 
-        return query.order_by(ProductType.created_at.desc()).offset(offset).limit(limit).all()
+        total_count = query.count()
+        items =  query.order_by(ProductType.created_at.desc()).offset(offset).limit(limit).all()
+        return items, total_count
 
     @staticmethod
     def get_product_type_by_id(db: Session, product_type_id: UUID) -> ProductType:

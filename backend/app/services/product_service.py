@@ -4,7 +4,7 @@ import shutil
 from uuid import UUID, uuid4
 from datetime import datetime
 from fastapi import HTTPException, status, UploadFile
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_
 from app.models.product_model import Product, ProductVariant
@@ -42,7 +42,7 @@ class ProductService:
     # =========================================================================
 
     @staticmethod
-    def get_all_products(db: Session, limit: int = 100, offset: int = 0, is_active: Optional[bool] = None, search: Optional[str] = None) -> List[ProductResponseData]:
+    def get_all_products(db: Session, limit: int = 100, offset: int = 0, is_active: Optional[bool] = None, search: Optional[str] = None) -> Tuple[List[ProductResponseData], int]:
         query = db.query(Product).options(
     joinedload(Product.variants).joinedload(ProductVariant.color),
     joinedload(Product.variants).joinedload(ProductVariant.size)
@@ -57,7 +57,9 @@ class ProductService:
                 Product.barcode.ilike(search_filter)
             ))
         db_products = query.order_by(Product.created_at.desc()).offset(offset).limit(limit).all()
-        return [ProductResponseData.model_validate(p) for p in db_products]
+        total_count = query.count()
+        items =  [ProductResponseData.model_validate(p) for p in db_products]
+        return items, total_count
 
     @staticmethod
     def get_product_by_id(db: Session, product_id: UUID) -> ProductResponseData:

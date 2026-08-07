@@ -4,7 +4,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 from app.models.user_model import User
-from app.schemas.response_schema import APIResponse
+from app.schemas.response_schema import APIResponse, PaginatedResponse
 from app.schemas.business_category_scehma import BusinessCategoryRead, BusinessCategoryCreate, BusinessCategoryResponseData, BusinessCategoryUpdate
 from app.services.business_category_service import BusinessCategoryService
 from app.core.database import get_db
@@ -20,7 +20,7 @@ router = APIRouter(prefix="/business-category", tags=["Business Category"])
 
 @router.get(
     "", 
-    response_model=APIResponse[List[BusinessCategoryRead]],
+    response_model=APIResponse[PaginatedResponse[BusinessCategoryRead]],
     status_code=status.HTTP_200_OK
 )
 def list_business_categories(
@@ -32,7 +32,7 @@ def list_business_categories(
     current_user: User = Depends(PermissionChecker("business_category:view_business_category"))
 ):
     try:
-        business_category_db = BusinessCategoryService.get_all_business_categories(
+        business_category_db, total_count = BusinessCategoryService.get_all_business_categories(
             db=db, 
             limit=limit, 
             offset=offset,
@@ -40,7 +40,13 @@ def list_business_categories(
             search=search
         )
         business_category_data = [BusinessCategoryRead.model_validate(business_category) for business_category in business_category_db]
-        return APIResponse.success(data=business_category_data)
+        paginated_data = {
+            "items": business_category_data,
+            "total": total_count,
+            "limit": limit,
+            "offset": offset
+        }
+        return APIResponse.success(data=paginated_data)
     except Exception as e:
         return APIResponse.fail(message=str(e))
 

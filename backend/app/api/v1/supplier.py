@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.services.supplier_service import SupplierService
-from app.schemas.response_schema import APIResponse
+from app.schemas.response_schema import APIResponse,PaginatedResponse
 from app.schemas.supplier_schema import SupplierRead, SupplierCreate, SupplierUpdate,SupplierResponseData
 from app.core.dependency import PermissionChecker, get_current_user
 from app.models.user_model import User
@@ -14,7 +14,7 @@ router = APIRouter(prefix="/supplier", tags=["Suppliers"])
 # =========================
 # LIST SUPPLIERS
 # =========================
-@router.get("", response_model=APIResponse[List[SupplierRead]],
+@router.get("", response_model=APIResponse[PaginatedResponse[SupplierRead]],
 status_code=status.HTTP_200_OK
 )
 def list_supplier(
@@ -29,7 +29,7 @@ def list_supplier(
     Get list of all suppliers.
     """
     try:
-        suppliers_db = SupplierService.get_all_supplier(
+        suppliers_db, total_count = SupplierService.get_all_supplier(
             db=db, 
             limit=limit, 
             offset=offset,
@@ -37,7 +37,13 @@ def list_supplier(
             search=search
         )
         suppliers_data = [SupplierRead.model_validate(suppliers) for suppliers in suppliers_db]
-        return APIResponse.success(data=suppliers_data)
+        paginated_data = {
+            "items": suppliers_data,
+            "total": total_count,
+            "limit": limit,
+            "offset": offset
+        }
+        return APIResponse.success(data=paginated_data)
     except Exception as e:
         return APIResponse.fail(message=str(e))
 

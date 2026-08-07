@@ -1,5 +1,5 @@
 import { api } from './axiosInstance';
-import type { APIResponse } from '../utilities/APIResponse';
+import type { APIResponse, PaginatedResult } from '../utilities/APIResponse';
 
 export interface ProductVariant {
   product_variant_id: string;
@@ -68,8 +68,8 @@ export interface ProductPayload {
 }
 
 export const productApi = {
-  listProducts: async (search?: string): Promise<APIResponse<Product[]>> => {
-    const response = await api.get('/products', { params: { search } });
+  listProducts: async (search?: string, limit?:number,offset?:number): Promise<APIResponse<PaginatedResult<Product>>> => {
+    const response = await api.get('/products', { params: { search, limit, offset } });
     return response.data;
   },
 

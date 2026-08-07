@@ -5,7 +5,7 @@ import os
 import json
 from uuid import uuid4, UUID
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional,Tuple
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.models.customer_order_model import Customer, Order, CustomerOrderHistory

@@ -2,7 +2,7 @@
 from uuid import UUID
 from datetime import datetime
 from fastapi import HTTPException, status
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from app.models.department_model import Department
@@ -18,7 +18,7 @@ class DepartmentService:
         offset: int = 0, 
         is_active: Optional[bool] = None,
         search: Optional[str] = None
-    ) -> List[Department]:
+    ) -> Tuple[List[Department], int]:
         # query = db.query(Department)
         query = db.query(Department).options(joinedload(Department.business_category))
         if is_active is not None:
@@ -33,8 +33,9 @@ class DepartmentService:
                     
                 )
             )
-            
-        return query.order_by(Department.created_at.desc()).offset(offset).limit(limit).all()
+        total_count = query.count()
+        items =  query.order_by(Department.created_at.desc()).offset(offset).limit(limit).all()
+        return items, total_count
 
     @staticmethod
     def get_department_by_id(db: Session, department_id: UUID) -> Department:

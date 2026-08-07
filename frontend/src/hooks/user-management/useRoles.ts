@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 import { roleApi, type Role } from '../../api/roleApi';
 import { useAuth } from '../../context/AuthContext';
 import { getRoleTableColumns } from '../../utilities/UserManagement';
+import { PAGE_SIZE } from '../../utilities/Pagination';
 
 export const useRoles = () => {
   const { accessToken, isLoading: isAuthLoading } = useAuth();
@@ -30,10 +31,11 @@ export const useRoles = () => {
     if (isAuthLoading || !accessToken) return;
     setIsLoading(true);
     try {
-      const res = await roleApi.listRoles(searchTerm || undefined);
+      let offset=(currentPage - 1) * PAGE_SIZE
+      const res = await roleApi.listRoles(searchTerm || undefined,  PAGE_SIZE, offset);
       if (res.requestStatus) {
-        setRoles(res.data || []);
-        setTotalItems(res.data?.length || 0);
+        setRoles(res.data?.items || []);
+        setTotalItems(res.data?.total || 0);
       } else {
         toast.error(res.message || 'An error occurred while fetching role definitions.');
       }
@@ -46,7 +48,7 @@ export const useRoles = () => {
 
   useEffect(() => {
     fetchRoles();
-  }, [accessToken, isAuthLoading, searchTerm]);
+  }, [accessToken, isAuthLoading, searchTerm, currentPage]);
 
   // Destructive Removal Operation Handler
   const handleExecuteDelete = async () => {
@@ -70,7 +72,7 @@ export const useRoles = () => {
   };
 
   // Reusable QuantraTable Controller Properties
-  const totalPages = useMemo(() => Math.ceil(totalItems / 10) || 1, [totalItems]);
+  const totalPages = useMemo(() => Math.ceil(totalItems / PAGE_SIZE) || 1, [totalItems]);
   const paginationRange = useMemo(() => {
     const range: (number | string)[] = [];
     for (let i = 1; i <= totalPages; i++) range.push(i);

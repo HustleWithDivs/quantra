@@ -1,7 +1,7 @@
 from uuid import UUID
 from datetime import datetime
 from fastapi import HTTPException, status
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from app.models.category_model import Category
@@ -16,7 +16,7 @@ class CategoryService:
         offset: int = 0, 
         is_active: Optional[bool] = None,
         search: Optional[str] = None
-    ) -> List[Category]:
+    ) -> Tuple[List[Category], int]:
         # query = db.query(Category)
         query = db.query(Category).options(joinedload(Category.departments))
         if is_active is not None:
@@ -30,8 +30,9 @@ class CategoryService:
                     Category.category_description.ilike(search_filter),
                 )
             )
-            
-        return query.order_by(Category.created_at.desc()).offset(offset).limit(limit).all()
+        total_count = query.count()
+        items = query.order_by(Category.created_at.desc()).offset(offset).limit(limit).all()
+        return items, total_count
 
     @staticmethod
     def get_category_by_id(db: Session, category_id: UUID) -> Category:

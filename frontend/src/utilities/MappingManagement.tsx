@@ -1,8 +1,6 @@
-import React from 'react';
 import { BiEditAlt, BiTrash } from 'react-icons/bi';
 import { type TableColumn } from '../components/reusable/QuantraTable';
 import { QuantraButton } from '../components/reusable/QuantraButton';
-import {type QunatraSelectOption} from '../components/reusable/QuantraSelectField'
 
 export interface MappingTemplate {
   template_id: string;

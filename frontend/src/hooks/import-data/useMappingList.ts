@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'react-toastify';
 import { api } from '../../api/axiosInstance'; // Or wherever your axios instance resides
 import { getMappingTableColumns, type MappingTemplate } from '../../utilities/MappingManagement';
+import { PAGE_SIZE } from '../../utilities/Pagination';
 
 export const useMappingTemplates = () => {
   // Core Data Arrays
@@ -63,7 +64,7 @@ export const useMappingTemplates = () => {
     }
   };
 
-  const totalPages = useMemo(() => Math.ceil(totalItems / 10) || 1, [totalItems]);
+  const totalPages = useMemo(() => Math.ceil(totalItems / PAGE_SIZE) || 1, [totalItems]);
   const paginationRange = useMemo(() => {
     const range: (number | string)[] = [];
     for (let i = 1; i <= totalPages; i++) range.push(i);

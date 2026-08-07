@@ -1,5 +1,5 @@
 import { api } from './axiosInstance';
-import type { APIResponse } from '../utilities/APIResponse';
+import type { APIResponse, PaginatedResult } from '../utilities/APIResponse';
 
 export interface Brand {
   brand_id: string;
@@ -17,8 +17,8 @@ export interface BrandPayload {
 
 
 export const brandApi = {
-  listBrand: async (search?: string): Promise<APIResponse<Brand[]>> => {
-    const response = await api.get('/brand', { params: { search } });
+  listBrand: async (search?: string, limit?:number,offset?:number): Promise<APIResponse<PaginatedResult<Brand>>> => {
+    const response = await api.get('/brand', { params: { search, limit, offset } });
     return response.data;
   },
 
