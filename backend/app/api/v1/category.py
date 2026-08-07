@@ -4,7 +4,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, Query, status, HTTPException
 from sqlalchemy.orm import Session
 from app.models.user_model import User
-from app.schemas.response_schema import APIResponse
+from app.schemas.response_schema import APIResponse,PaginatedResponse
 from app.schemas.category_schema import CategoryRead, CategoryCreate, CategoryResponseData, CategoryUpdate
 from app.services.category_service import CategoryService
 from app.core.database import get_db
@@ -15,7 +15,7 @@ router = APIRouter(prefix="/category", tags=["Category"])
 
 @router.get(
     "", 
-    response_model=APIResponse[List[CategoryRead]],
+    response_model=APIResponse[PaginatedResponse[CategoryRead]],
     status_code=status.HTTP_200_OK
 )
 def list_categories(
@@ -27,14 +27,20 @@ def list_categories(
     current_user: User = Depends(PermissionChecker("category:view_category"))
 ):
     try:
-        categories_db = CategoryService.get_all_categories(
+        categories_db,total_count = CategoryService.get_all_categories(
             db=db, limit=limit, offset=offset, is_active=is_active, search=search
         )
         categories_data = [CategoryRead.model_validate(c) for c in categories_db]
-        return APIResponse.success(code=200, message="Categories retrieved successfully", data=categories_data)
+        paginated_data = {
+            "items": categories_data,
+            "total": total_count,
+            "limit": limit,
+            "offset": offset
+        }
+        return APIResponse.success(data=paginated_data)
     except Exception as e:
-        logger.error(f"Error listing categories: {str(e)}")
-        raise HTTPException(status_code=500, detail="Internal processing fault.")
+        return APIResponse.fail(message=str(e))
+
 
 @router.get(
     "/{category_id}", 

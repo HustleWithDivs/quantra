@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { Stack } from 'react-bootstrap';
 import { BiSave, BiCloudUpload, BiTrash } from 'react-icons/bi';
 import { QuantraButton } from '../../components/reusable/QuantraButton';

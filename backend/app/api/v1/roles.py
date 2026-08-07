@@ -2,7 +2,7 @@ from uuid import UUID
 from typing import List, Optional
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
-from app.schemas.response_schema import APIResponse
+from app.schemas.response_schema import APIResponse,PaginatedResponse
 from app.models.user_model import User
 from app.schemas.role_schema import RoleRead, RoleCreate, RoleResponseData, RoleDetailsRead, RoleUpdate
 from app.services.role_service import RoleService
@@ -13,7 +13,7 @@ router = APIRouter(prefix="/roles", tags=["Roles"])
 
 @router.get(
     "", 
-    response_model=APIResponse[List[RoleRead]],
+    response_model=APIResponse[PaginatedResponse[RoleRead]],
     status_code=status.HTTP_200_OK,
 )
 def list_roles(
@@ -26,7 +26,7 @@ def list_roles(
 ):
     try:
         # 1. Fetching roles using the Service Layer
-        roles_db = RoleService.get_all_roles(
+        roles_db, total_count = RoleService.get_all_roles(
             db=db, 
             limit=limit, 
             offset=offset, 
@@ -36,12 +36,17 @@ def list_roles(
         
         # 2. Parsing to Pydantic objects for type-safe validation
         roles_data = [RoleRead.model_validate(role) for role in roles_db]
-        
+        paginated_data = {
+            "items": roles_data,
+            "total": total_count,
+            "limit": limit,
+            "offset": offset
+        }
         # 3. Returning using your custom enterprise response schema
         return APIResponse.success(
             code=200,
             message="Roles retrieved successfully",
-            data=roles_data
+            data=paginated_data
         )
         
     except Exception as e:

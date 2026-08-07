@@ -34,6 +34,7 @@ export const WhatIfSimulator: React.FC = () => {
             icon={<BiRotateLeft className="fs-5" />}
             onClick={handleReset}
             text="Reset Simulation"
+            disabled={isLoading}
           />
         </Col>
       </Row>

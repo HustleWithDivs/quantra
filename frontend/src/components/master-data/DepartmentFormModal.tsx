@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Row, Col, Card, Spinner } from 'react-bootstrap';
+import { Form, Row, Col, Spinner } from 'react-bootstrap';
 import { QuantraModal } from '../reusable/QuantraModal';
 import { QuantraInputField } from '../reusable/QuantraInputField';
 import { QuantraSelectField } from '../reusable/QuantraSelectField';

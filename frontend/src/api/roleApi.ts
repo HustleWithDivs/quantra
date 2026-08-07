@@ -1,4 +1,4 @@
-import type { APIResponse } from '../utilities/APIResponse';
+import type { APIResponse, PaginatedResult } from '../utilities/APIResponse';
 import { api } from './axiosInstance';
 
 export interface Permission {
@@ -26,10 +26,9 @@ export interface RolePayload {
 
 export const roleApi = {
   // 1. List roles - extract .data from AxiosResponse
-  listRoles: async (search?: string): Promise<APIResponse<Role[]>> => {
-    const response = await api.get('/roles', {
-      params: search ? { search } : undefined
-    });
+  listRoles: async (search?: string, limit?:number,offset?:number): Promise<APIResponse<PaginatedResult<Role>>> => {
+    const response = await api.get('/roles', { params: { search, limit, offset } }
+    );
     return response.data; // CRITICAL FIX: Returns the APIResponse instead of AxiosResponse
   },
 

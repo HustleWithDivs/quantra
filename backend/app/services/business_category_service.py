@@ -1,7 +1,7 @@
 from uuid import UUID
 from datetime import datetime
 from fastapi import HTTPException, status
-from typing import List, Optional
+from typing import List, Optional,Tuple
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_
 from app.models.business_category_model import BusinessCategory
@@ -14,7 +14,7 @@ class BusinessCategoryService:
         offset: int = 0, 
         is_active: Optional[bool] = None,
         search: Optional[str] = None
-    ) -> List[BusinessCategory]:
+    ) -> Tuple[List[BusinessCategory], int]:
         """
         Retrieves business categories along with their associated role configurations using an eager JOIN lookup.
         """
@@ -31,8 +31,9 @@ class BusinessCategoryService:
                     BusinessCategory.business_category_description.ilike(search_filter),
                )
             )
-            
-        return query.order_by(BusinessCategory.created_at.desc()).offset(offset).limit(limit).all()
+        total_count = query.count()
+        items = query.order_by(BusinessCategory.created_at.desc()).offset(offset).limit(limit).all()
+        return items, total_count    
 
     @staticmethod
     def create_business_category(db: Session, business_category_in:BusinessCategoryCreate, current_user_id: Optional[UUID] = None) -> BusinessCategory:

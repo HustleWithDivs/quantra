@@ -4,7 +4,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, Query, status, HTTPException
 from sqlalchemy.orm import Session
 from app.models.user_model import User
-from app.schemas.response_schema import APIResponse
+from app.schemas.response_schema import APIResponse,PaginatedResponse
 from app.schemas.sub_category_schema import SubCategoryRead, SubCategoryCreate, SubCategoryResponseData, SubCategoryUpdate
 from app.services.sub_category_service import SubCategoryService
 from app.core.database import get_db
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/sub-category", tags=["SubCategory"])
 
 @router.get(
     "",
-    response_model=APIResponse[List[SubCategoryRead]],
+    response_model=APIResponse[PaginatedResponse[SubCategoryRead]],
     status_code=status.HTTP_200_OK
 )
 def list_sub_categories(
@@ -28,11 +28,17 @@ def list_sub_categories(
     current_user: User = Depends(PermissionChecker("sub_category:view_sub_category"))
 ):
     try:
-        sub_categories_db = SubCategoryService.get_all_sub_categories(
+        sub_categories_db, total_count = SubCategoryService.get_all_sub_categories(
             db=db, limit=limit, offset=offset, is_active=is_active, search=search
         )
         sub_categories_data = [SubCategoryRead.model_validate(sc) for sc in sub_categories_db]
-        return APIResponse.success(code=200, message="SubCategories matrix pulled successfully", data=sub_categories_data)
+        paginated_data = {
+            "items": sub_categories_data,
+            "total": total_count,
+            "limit": limit,
+            "offset": offset
+        }
+        return APIResponse.success(code=200, message="SubCategories matrix pulled successfully", data=paginated_data)
     except Exception as e:
         logger.error(f"Error handling subcategories query loop: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal processing fault.")

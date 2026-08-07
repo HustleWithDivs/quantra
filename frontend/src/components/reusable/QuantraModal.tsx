@@ -7,7 +7,7 @@ interface QuantraModalProps {
   show: boolean;
   onClose: () => void;
   title: string;
-  size?: 'sm'| 'md' | 'lg' | 'xl';
+  size?: 'sm'| 'lg' | 'xl';
   fullscreen?: true | 'sm-down' | 'md-down' | 'lg-down' | 'xl-down' | 'xxl-down';
   children: React.ReactNode;
   footerActions?: React.ReactNode; 
@@ -31,7 +31,7 @@ export const QuantraModal: React.FC<QuantraModalProps> = ({
     <Modal
       show={show}
       onHide={onClose}
-      size={fullscreen ? undefined : size}
+      size={size}
       fullscreen={fullscreen || undefined}
       backdrop="static"    
       keyboard={false}       

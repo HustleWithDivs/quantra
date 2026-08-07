@@ -4,7 +4,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 from app.models.user_model import User
-from app.schemas.response_schema import APIResponse
+from app.schemas.response_schema import APIResponse,PaginatedResponse
 from app.schemas.user_schema import UserRead, UserCreate, UserResponseData, UserUpdate
 from app.services.user_service import UserService
 from app.core.database import get_db
@@ -20,7 +20,7 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 @router.get(
     "", 
-    response_model=APIResponse[List[UserRead]],
+    response_model=APIResponse[PaginatedResponse[UserRead]],
     status_code=status.HTTP_200_OK
 )
 def list_users(
@@ -32,7 +32,7 @@ def list_users(
     current_user: User = Depends(PermissionChecker("users:view_user"))
 ):
     try:
-        users_db = UserService.get_all_users(
+        users_db, total_count = UserService.get_all_users(
             db=db, 
             limit=limit, 
             offset=offset, \
@@ -40,7 +40,13 @@ def list_users(
             search=search
         )
         users_data = [UserRead.model_validate(user) for user in users_db]
-        return APIResponse.success(data=users_data)
+        paginated_data = {
+            "items": users_data,
+            "total": total_count,
+            "limit": limit,
+            "offset": offset
+        }
+        return APIResponse.success(data=paginated_data)
     except Exception as e:
         return APIResponse.fail(message=str(e))
 

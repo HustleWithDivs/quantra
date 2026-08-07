@@ -3,8 +3,7 @@ import { toast } from 'react-toastify';
 import { customerApi, type Customer } from '../../api/customerApi';
 import { getCustomerTableColumns } from '../../utilities/CustomerManagement';
 
-const PAGE_SIZE = 10;
-
+import { PAGE_SIZE } from '../../utilities/Pagination';
 export const useCustomers = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [totalItems, setTotalItems] = useState<number>(0);
@@ -26,9 +25,9 @@ export const useCustomers = () => {
     try {
       const res = await customerApi.listCustomers(PAGE_SIZE, offset);
       if (res.requestStatus) {
-        setCustomers(res.data || []);
+        setCustomers(res.data?.items || []);
         // Note: Set total count from response metadata if available, else approximate
-        setTotalItems(res.data?.length || 0);
+        setTotalItems(res.data?.total || 0);
       } else {
         toast.error(res.message || 'Failed to fetch customer records.');
       }

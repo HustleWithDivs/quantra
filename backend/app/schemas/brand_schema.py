@@ -3,6 +3,8 @@ from datetime import datetime, date
 from typing import List, Optional
 from pydantic import BaseModel, EmailStr, ConfigDict ,Field
 
+
+
 # For Directory Listing (Lightweight)
 class BrandRead(BaseModel):
     brand_id: UUID

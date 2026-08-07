@@ -1,4 +1,3 @@
-import React from 'react';
 import { BiShow } from 'react-icons/bi';
 import { type TableColumn } from '../components/reusable/QuantraTable';
 import { QuantraButton } from '../components/reusable/QuantraButton';

@@ -1,5 +1,5 @@
 from uuid import UUID
-from typing import List, Optional
+from typing import List, Optional,Tuple
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_
@@ -16,8 +16,8 @@ class SupplierService:
         limit: int = 100,
          offset: int = 0,
          is_active: Optional[bool] = None,
-          search: Optional[str] = None
-        ) -> List[Supplier]:
+          search: Optional[str] = None   
+        ) -> Tuple[List[Supplier], int]:
         query = db.query(Supplier)
 
         if is_active is not None:
@@ -34,7 +34,9 @@ class SupplierService:
                )
             )
             
-        return query.order_by(Supplier.created_at.desc()).offset(offset).limit(limit).all()
+        total_count = query.count()
+        items = query.order_by(Supplier.created_at.desc()).offset(offset).limit(limit).all()
+        return items, total_count
 
 
     @staticmethod

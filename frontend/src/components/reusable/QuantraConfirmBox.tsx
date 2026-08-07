@@ -34,7 +34,7 @@ export const QuantraConfirmBox: React.FC<QuantraConfirmBoxProps> = ({
       show={show}
       onClose={onCancel}
       title={title}
-      size="md" // Kept compact specifically for verification notifications
+      size="sm" // Kept compact specifically for verification notifications
       footerActions={
         <div className="d-flex justify-content-end gap-2 w-100">
           <QuantraButton

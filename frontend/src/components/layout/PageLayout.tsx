@@ -1,6 +1,6 @@
-import React, { lazy, Suspense,useState } from 'react';
+import  { lazy, Suspense,useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Container, Row, Col, Spinner } from 'react-bootstrap';
+import { Container,  Spinner } from 'react-bootstrap';
 import Topbar from './Topbar';
 import Sidebar from './Sidebar';
 
@@ -26,12 +26,12 @@ const Users = lazy(() => import('../../pages/user-management/Users'));
 const Roles = lazy(() => import('../../pages/user-management/Roles'));
 const Settings = lazy(() => import('../../pages/Settings'));
 const WhatIfSimulator = lazy(()=>import('../../pages/WhatIfSimulator'));
-const QuantraButtonExample = lazy(()=>import('../../pages/examples/QuantraButtonExample'))
-const QuantraInputFieldExample = lazy(()=>import('../../pages/examples/QuantraInputFieldExample'))
-const QuantraTableExample = lazy(()=>import('../../pages/examples/QuantraTableExample'))
-const QuantraModalExample = lazy(()=>import('../../pages/examples/QuantraModalExample'))
-const QuantraWidgetExample = lazy(()=>import('../../pages/examples/QuantraWidgetExample'))
 
+interface PageLayoutProps {
+  theme: string;
+  setTheme: (theme: string) => void;
+  onToggleSidebar: () => void;
+}
 // Centralized UI loading indicator fallback
 const PageLoader =() =>(
    
@@ -42,7 +42,7 @@ const PageLoader =() =>(
   </div>
 );
 
-const PageLayout=({theme,setTheme}) =>{
+const PageLayout=({theme,setTheme}:PageLayoutProps) =>{
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
   return (
     <Container fluid className="p-0 min-vh-100 d-flex flex-column overflow-hidden">
@@ -82,11 +82,7 @@ const PageLayout=({theme,setTheme}) =>{
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/what-if" element={<WhatIfSimulator/>}/>
                 <Route path="/demand-forecasting" element={<DemandForecasting/>}/>
-                <Route path="/button-example" element={<QuantraButtonExample />} />
-                <Route path="/input-example" element={<QuantraInputFieldExample />} />
-                <Route path="/table-example" element={<QuantraTableExample />} />
-                <Route path="/modal-example" element={<QuantraModalExample />} />
-                <Route path="/widget-example" element={<QuantraWidgetExample />} />
+                
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>
             </Suspense>

@@ -5,7 +5,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, Query, status, HTTPException
 from sqlalchemy.orm import Session
 from app.models.user_model import User
-from app.schemas.response_schema import APIResponse
+from app.schemas.response_schema import APIResponse,PaginatedResponse
 from app.schemas.department_scehma import DepartmentRead, DepartmentCreate, DepartmentResponseData, DepartmentUpdate
 from app.services.department_service import DepartmentService
 from app.core.database import get_db
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/departments", tags=["Departments"])
 
 @router.get(
     "", 
-    response_model=APIResponse[List[DepartmentRead]],
+    response_model=APIResponse[PaginatedResponse[DepartmentRead]],
     status_code=status.HTTP_200_OK
 )
 def list_departments(
@@ -28,14 +28,20 @@ def list_departments(
     current_user: User = Depends(PermissionChecker("department:view_department"))
 ):
     try:
-        departments_db = DepartmentService.get_all_departments(
+        departments_db,total_count = DepartmentService.get_all_departments(
             db=db, limit=limit, offset=offset, is_active=is_active, search=search
         )
         departments_data = [DepartmentRead.model_validate(d) for d in departments_db]
+        paginated_data = {
+            "items": departments_data,
+            "total": total_count,
+            "limit": limit,
+            "offset": offset
+        }
         return APIResponse.success(
             code=200,
             message="Departments retrieved successfully",
-            data=departments_data
+            data=paginated_data
         )
     except Exception as e:
         logger.error(f"Error querying departments matrix: {str(e)}")

@@ -9,7 +9,7 @@ from app.core.database import get_db, engine
 from app.core.dependency import get_current_user
 from app.models.user_model import User
 from app.models.customer_order_model import Customer, Order
-from app.schemas.response_schema import APIResponse
+from app.schemas.response_schema import APIResponse,PaginatedResponse
 from app.schemas.customer_order_schema import CustomerReadSchema, OrderReadSchema
 from app.services.customer_order_service import CustomerOrderIngestionEngine
 
@@ -67,7 +67,7 @@ async def bulk_upsert_sales_records(
 # =========================================================================
 @router.get(
     "/customers", 
-    response_model=APIResponse[List[CustomerReadSchema]],
+    response_model=APIResponse[PaginatedResponse[CustomerReadSchema]],
     status_code=status.HTTP_200_OK
 )
 def get_all_customers(limit: int = 50, offset: int = 0, db: Session = Depends(get_db)):
@@ -75,15 +75,22 @@ def get_all_customers(limit: int = 50, offset: int = 0, db: Session = Depends(ge
     Retrieves complete structural records for all clients registered inside the system, 
     including internal UUID strings and external mapping composite references.
     """
-    customers = db.query(Customer).offset(offset).limit(limit).all()
+    query = db.query(Customer)
+    total_count=query.count()
+    customers=query.offset(offset).limit(limit).all()
     
     # Standard validation dump parsing across active schemas
-    data = [CustomerReadSchema.model_validate(c) for c in customers]
-    
+    customer_data = [CustomerReadSchema.model_validate(c) for c in customers]
+    paginated_data = {
+            "items": customer_data,
+            "total": total_count,
+            "limit": limit,
+            "offset": offset
+        }
     return APIResponse.success(
         code=200,
         message="Customer records successfully fetched.",
-        data=data
+        data=paginated_data
     )
 
 # =========================================================================

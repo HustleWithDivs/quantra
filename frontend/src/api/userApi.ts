@@ -1,5 +1,5 @@
 import { api } from './axiosInstance';
-import type { APIResponse } from '../utilities/APIResponse';
+import type { APIResponse, PaginatedResult } from '../utilities/APIResponse';
 
 export interface User {
   user_id: string;
@@ -34,8 +34,8 @@ export interface UserProfile {
 }
 
 export const userApi = {
-  listUsers: async (search?: string): Promise<APIResponse<User[]>> => {
-    const response = await api.get('/users', { params: { search } });
+  listUsers: async (search?: string, limit?:number,offset?:number): Promise<APIResponse<PaginatedResult<User>>> => {
+    const response = await api.get('/users', { params:  { search, limit, offset }});
     return response.data;
   },
 

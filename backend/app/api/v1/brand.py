@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.services.brand_service import BrandService
-from app.schemas.response_schema import APIResponse
+from app.schemas.response_schema import APIResponse, PaginatedResponse
 from app.schemas.brand_schema import BrandRead, BrandCreate,BrandUpdate,BrandResponseData
 from app.core.dependency import PermissionChecker, get_current_user
 from app.models.user_model import User
@@ -12,7 +12,7 @@ from app.models.user_model import User
 
 router = APIRouter(prefix="/brand", tags=["Brands"])
 @router.get("", 
-response_model=APIResponse[List[BrandRead]],
+response_model=APIResponse[PaginatedResponse[BrandRead]],
 status_code=status.HTTP_200_OK
 )
 def list_brand(
@@ -25,7 +25,7 @@ def list_brand(
 ):
     """Get global directory list of all registered customers."""
     try:
-        brand_db = BrandService.get_all_brand(
+        brand_db, total_count = BrandService.get_all_brand(
             db=db, 
             limit=limit, 
             offset=offset,
@@ -33,7 +33,16 @@ def list_brand(
             search=search
         )
         brand_data = [BrandRead.model_validate(brand) for brand in brand_db]
-        return APIResponse.success(data=brand_data)
+        
+        paginated_data = {
+            "items": brand_data,
+            "total": total_count,
+            "limit": limit,
+            "offset": offset
+        }
+        
+        return APIResponse.success(data=paginated_data)
+        
 
     except Exception as e:
         return APIResponse.fail(message=str(e))

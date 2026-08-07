@@ -4,8 +4,8 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { productApi, type Product, type ProductVariant } from '../../api/productApi';
 import { getProductTableColumns } from '../../utilities/Product';
+import { PAGE_SIZE } from '../../utilities/Pagination';
 
-const PAGE_SIZE = 10;
 
 export const useProducts = () => {
   const navigate = useNavigate();
@@ -34,21 +34,22 @@ export const useProducts = () => {
   const fetchProducts = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await productApi.listProducts(searchTerm || undefined);
+      let offset=(currentPage - 1) * PAGE_SIZE
+      const res = await productApi.listProducts(searchTerm || undefined, PAGE_SIZE, offset);
       if (res.requestStatus && res.data) {
-        setProducts(res.data);
-        setTotalItems(res.data.length);
+        setProducts(res.data?.items || []);
+        setTotalItems(res.data?.total || 0);
       }
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Failed to fetch catalog products.');
     } finally {
       setIsLoading(false);
     }
-  }, [searchTerm]);
+  }, [searchTerm,currentPage]);
 
   useEffect(() => {
     fetchProducts();
-  }, [fetchProducts, currentPage]);
+  }, [fetchProducts, currentPage, searchTerm]);
 
   const toggleRowExpansion = (productId: string) => {
     setExpandedRows((prev) => ({ ...prev, [productId]: !prev[productId] }));

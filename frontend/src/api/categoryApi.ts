@@ -1,5 +1,5 @@
 import { api } from './axiosInstance';
-import type { APIResponse } from '../utilities/APIResponse';
+import type { APIResponse, PaginatedResult } from '../utilities/APIResponse';
 import type { Department } from './departmentApi';
 
 export interface Category {
@@ -22,8 +22,8 @@ export interface CategoryPayload {
 
 
 export const categoryApi = {
-  listCategory: async (search?: string): Promise<APIResponse<Category[]>> => {
-    const response = await api.get('/category', { params: { search } });
+  listCategory: async (search?: string, limit?:number,offset?:number): Promise<APIResponse<PaginatedResult<Category>>> => {
+    const response = await api.get('/category', { params: { search, limit, offset } });
     return response.data;
   },
 

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.schemas.product_schema import ProductCreate, ProductUpdate, ProductResponseData
 from app.services.product_service import ProductService
-from app.schemas.response_schema import APIResponse  # Adjust this import to match your actual wrapper path
+from app.schemas.response_schema import APIResponse,PaginatedResponse  # Adjust this import to match your actual wrapper path
 
 # Adjust these auth imports if your setup looks different
 from app.models.user_model import User
@@ -91,7 +91,7 @@ def create_product_with_initial_variant(
     )
 
 
-@router.get("", response_model=APIResponse[List[ProductResponseData]])
+@router.get("", response_model=APIResponse[PaginatedResponse[ProductResponseData]])
 def list_all_products(
     limit: int = Query(default=100, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
@@ -100,13 +100,19 @@ def list_all_products(
     db: Session = Depends(get_db),
     current_user: User = Depends(PermissionChecker("product:view_product"))
 ):
-    validated_products = ProductService.get_all_products(
+    validated_products,total_count = ProductService.get_all_products(
         db=db, limit=limit, offset=offset, is_active=is_active, search=search
     )
+    paginated_data = {
+            "items": validated_products,
+            "total": total_count,
+            "limit": limit,
+            "offset": offset
+        }
     return APIResponse.success(
         code=200, 
         message="Catalog portfolio listings compiled cleanly", 
-        data=validated_products
+        data=paginated_data
     )
 
 

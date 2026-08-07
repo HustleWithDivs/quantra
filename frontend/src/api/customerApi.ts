@@ -1,5 +1,5 @@
 import { api } from './axiosInstance';
-import type { APIResponse } from '../utilities/APIResponse';
+import type { APIResponse, PaginatedResult } from '../utilities/APIResponse';
 
 export interface HistoryItem {
   order_id: string;
@@ -44,7 +44,7 @@ export interface Customer {
 
 export const customerApi = {
   // GET /api/v1/sales-data/customers?limit=10&offset=0
-  listCustomers: async (limit = 10, offset = 0): Promise<APIResponse<Customer[]>> => {
+  listCustomers: async (limit = 10, offset = 0): Promise<APIResponse<PaginatedResult<Customer>>> => {
     const response = await api.get('/sales-data/customers', {
       params: { limit, offset },
     });

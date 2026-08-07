@@ -97,12 +97,12 @@ export const useProductForm = () => {
           api.get('/size').catch(() => ({ data: { data: [] } }))
         ]);
 
-        setBusinessCategories(resBC.data.data.map((b: any) => ({ value: b.business_category_id, label: b.business_category_name })));
-        setBrands(resBrands.data.data.map((b: any) => ({ value: b.brand_id, label: b.brand_name })));
-        setSuppliers(resSuppliers.data.data.map((s: any) => ({ value: s.supplier_id, label: s.supplier_name })));
-        setMaterials(resMaterials.data.data.map((m: any) => ({ value: m.material_id, label: m.material_name })));
-        setColors(resColors.data.data.map((c: any) => ({ value: c.color_id, label: c.color_name })));
-        setSizes(resSizes.data.data.map((s: any) => ({ value: s.size_id, label: s.size_name })));
+        setBusinessCategories(resBC?.data?.data?.items?.map((b: any) => ({ value: b.business_category_id, label: b.business_category_name })));
+        setBrands(resBrands?.data?.data?.items?.map((b: any) => ({ value: b.brand_id, label: b.brand_name })));
+        setSuppliers(resSuppliers?.data?.data?.items?.map((s: any) => ({ value: s.supplier_id, label: s.supplier_name })));
+        setMaterials(resMaterials?.data?.data?.items?.map((m: any) => ({ value: m.material_id, label: m.material_name })));
+        setColors(resColors?.data?.data?.map((c: any) => ({ value: c.color_id, label: c.color_name })));
+        setSizes(resSizes?.data?.data?.map((s: any) => ({ value: s.size_id, label: s.size_name })));
       } catch (err) {
         toast.error('Failed to pre-fetch foundational catalog variables.');
       }
@@ -113,28 +113,28 @@ export const useProductForm = () => {
   useEffect(() => {
     if (!watchBusinessCategory) { setDepartments([]); return; }
     api.get('/departments', { params: { business_category_id: watchBusinessCategory } })
-      .then(res => setDepartments(res.data.data.map((d: any) => ({ value: d.department_id, label: d.department_name }))))
+      .then(res => setDepartments(res?.data?.data?.items?.map((d: any) => ({ value: d.department_id, label: d.department_name }))))
       .catch(() => setDepartments([]));
   }, [watchBusinessCategory]);
 
   useEffect(() => {
     if (!watchDepartment) { setCategories([]); return; }
     api.get('/category', { params: { department_id: watchDepartment } })
-      .then(res => setCategories(res.data.data.map((c: any) => ({ value: c.category_id, label: c.category_name }))))
+      .then(res => setCategories(res.data?.data?.items?.map((c: any) => ({ value: c.category_id, label: c.category_name }))))
       .catch(() => setCategories([]));
   }, [watchDepartment]);
 
   useEffect(() => {
     if (!watchCategory) { setSubCategories([]); return; }
     api.get('/sub-category', { params: { category_id: watchCategory } })
-      .then(res => setSubCategories(res.data.data.map((s: any) => ({ value: s.sub_category_id, label: s.sub_category_name }))))
+      .then(res => setSubCategories(res.data?.data?.items?.map((s: any) => ({ value: s.sub_category_id, label: s.sub_category_name }))))
       .catch(() => setSubCategories([]));
   }, [watchCategory]);
 
   useEffect(() => {
     if (!watchSubCategory) { setProductTypes([]); return; }
     api.get('/product-type', { params: { sub_category_id: watchSubCategory } })
-      .then(res => setProductTypes(res.data.data.map((p: any) => ({ value: p.product_type_id, label: p.product_type }))))
+      .then(res => setProductTypes(res.data?.data?.items?.map((p: any) => ({ value: p.product_type_id, label: p.product_type }))))
       .catch(() => setProductTypes([]));
   }, [watchSubCategory]);
 

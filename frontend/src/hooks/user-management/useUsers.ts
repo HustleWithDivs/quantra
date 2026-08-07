@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 import { userApi, type User } from '../../api/userApi';
 import { useAuth } from '../../context/AuthContext';
 import { getUserTableColumns } from '../../utilities/UserManagement';
+import { PAGE_SIZE } from '../../utilities/Pagination';
 
 export const useUsers = () => {
   const { accessToken, isLoading: isAuthLoading } = useAuth();
@@ -29,9 +30,10 @@ export const useUsers = () => {
     if (isAuthLoading || !accessToken) return;
     setIsLoading(true);
     try {
-      const res = await userApi.listUsers(searchTerm || undefined);
+      let offset=(currentPage - 1) * PAGE_SIZE
+      const res = await userApi.listUsers(searchTerm || undefined,  PAGE_SIZE, offset);
       if (res.requestStatus) {
-        setUsers(res.data || []);
+        setUsers(res.data?.items || []);
         setTotalItems(res.data?.length || 0);
       } else {
         toast.error(res.message || 'An error occurred while fetching user accounts.');
@@ -45,7 +47,7 @@ export const useUsers = () => {
 
   useEffect(() => {
     fetchUsers();
-  }, [accessToken, isAuthLoading, searchTerm]);
+  }, [accessToken, isAuthLoading, searchTerm, currentPage]);
 
   const handleExecuteDelete = async () => {
     if (!userToDelete) return;
@@ -67,7 +69,7 @@ export const useUsers = () => {
     }
   };
 
-  const totalPages = useMemo(() => Math.ceil(totalItems / 10) || 1, [totalItems]);
+  const totalPages = useMemo(() => Math.ceil(totalItems / PAGE_SIZE) || 1, [totalItems]);
   const paginationRange = useMemo(() => {
     const range: (number | string)[] = [];
     for (let i = 1; i <= totalPages; i++) range.push(i);

@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.services.material_service import MaterialService
-from app.schemas.response_schema import APIResponse
+from app.schemas.response_schema import APIResponse,PaginatedResponse
 from app.schemas.material_schema import MaterialRead, MaterialCreate, MaterialUpdate,MaterialResponseData
 from app.core.dependency import PermissionChecker, get_current_user
 from app.models.user_model import User
@@ -14,7 +14,7 @@ router = APIRouter(prefix="/material", tags=["Materials"])
 # =========================
 # LIST 
 # =========================
-@router.get("", response_model=APIResponse[List[MaterialRead]],
+@router.get("", response_model=APIResponse[PaginatedResponse[MaterialRead]],
 status_code=status.HTTP_200_OK
 )
 def list_material(
@@ -29,7 +29,7 @@ def list_material(
     Get list of all materials.
     """
     try:
-        materials_db = MaterialService.get_all_material(
+        materials_db,total_count = MaterialService.get_all_material(
             db=db, 
             limit=limit, 
             offset=offset,
@@ -37,7 +37,13 @@ def list_material(
             search=search
         )
         materials_data = [MaterialRead.model_validate(materials) for materials in materials_db]
-        return APIResponse.success(data=materials_data)
+        paginated_data = {
+            "items": materials_data,
+            "total": total_count,
+            "limit": limit,
+            "offset": offset
+        }
+        return APIResponse.success(data=paginated_data)
     except Exception as e:
         return APIResponse.fail(message=str(e))
 
