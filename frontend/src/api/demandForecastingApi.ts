@@ -68,7 +68,7 @@ export const demandForecastingApi = {
     const endpoint = endpointMap[level] || `/${level}`;
     const res = await api.get(endpoint);
 
-    const rawData = res.data?.data || res.data || [];
+    const rawData = res.data?.data?.items || res.data?.items || [];
     return rawData.map((item: any) => normalizeCatalogItem(item, level));
   },
 
